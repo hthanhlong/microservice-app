@@ -3,7 +3,7 @@ name: Deploy Microservices
 on:
   push:
     branches:
-      - main # Chạy CI/CD khi push lên main
+      - main-hold-on # Chạy CI/CD khi push lên main
 
 jobs:
   build:
