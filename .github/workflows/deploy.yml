@@ -1,0 +1,51 @@
+name: Deploy Microservices
+
+on:
+  push:
+    branches:
+      - main # Chạy CI/CD khi push lên main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: |
+          cd service-1 && npm install
+          cd ../service-2 && npm install
+          cd ../service-3 && npm install
+
+      - name: Run tests
+        run: |
+          cd service-1 && npm test
+          cd ../service-2 && npm test
+          cd ../service-3 && npm test
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Service 1
+        run: |
+          echo "Deploying Service 1..."
+          # Gọi API hoặc SSH để deploy service 1
+
+      - name: Deploy Service 2
+        run: |
+          echo "Deploying Service 2..."
+          # Gọi API hoặc SSH để deploy service 2
+
+      - name: Deploy Service 3
+        run: |
+          echo "Deploying Service 3..."
+          # Gọi API hoặc SSH để deploy service 3
