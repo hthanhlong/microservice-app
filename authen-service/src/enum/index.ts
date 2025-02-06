@@ -1,0 +1,6 @@
+export enum ErrorCode {
+  NONE = 0,
+  NOT_FOUND = 11028,
+  BAD_REQUEST = 10543,
+  EMAIL_PASSWORD_EXISTED = 83478,
+}

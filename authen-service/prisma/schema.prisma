@@ -14,14 +14,17 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String? @db.VarChar(64)
+  id             Int      @id @default(autoincrement())
+  uuid           String   @default(uuid())
+  email          String   @unique @db.VarChar(128)
+  name           String?  @db.VarChar(64)
   hashedPassword String
-  salt String
-  verifyCode String
-  isVerified Boolean
-  Phone String?
-  Address String 
-  IsDeleted Boolean @default(false)
+  salt           String
+  verifyCode     String
+  isVerified     Boolean  @default(false)
+  phone          String?  @db.VarChar(20)
+  address        String?  @db.VarChar(256)
+  isDeleted      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

@@ -6,9 +6,10 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  IsDate,
 } from 'class-validator';
 
-export class User {
+export class UserEntity {
   @IsNumber()
   id: string;
 
@@ -20,9 +21,11 @@ export class User {
 
   @IsString()
   @MaxLength(64)
+  @IsNotEmpty()
   name: string;
 
   @IsString()
+  @IsNotEmpty()
   hashedPassword: string;
 
   @IsString()
@@ -32,6 +35,9 @@ export class User {
   salt: string;
 
   @IsString()
+  @MaxLength(6)
+  @MinLength(6)
+  @IsNotEmpty()
   verifyCode: string;
 
   @IsBoolean()
@@ -40,11 +46,19 @@ export class User {
   @IsString()
   @MaxLength(10)
   @MinLength(10)
+  @IsNotEmpty()
   Phone: string;
 
   @IsString()
+  @IsNotEmpty()
   Address: string;
 
   @IsBoolean()
   IsDeleted: boolean;
+
+  @IsDate()
+  createdAt: Date;
+
+  @IsDate()
+  updatedAt: Date;
 }
