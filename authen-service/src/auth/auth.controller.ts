@@ -1,32 +1,32 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   HttpStatus,
   HttpCode,
-  HttpException,
   BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Body() signUpDto: SignUpDto) {
-    try {
-      const result = await this.authService.register(signUpDto);
-      const { hasError, message } = result;
-      if (hasError) {
-        throw new BadRequestException(message);
-      }
-      return result;
-    } catch (error) {
-      console.error(error);
-      throw new HttpException('some thing wrong', HttpStatus.BAD_GATEWAY);
-    }
+  @Post('sign-up')
+  async signUp(@Body() signUpDto: SignUpDto) {
+    const result = await this.authService.signUp(signUpDto);
+    const { hasError, message } = result;
+    if (hasError) throw new BadRequestException(message);
+    return result;
+  }
+
+  @Get('sign-in')
+  async signIn(@Body() signInDto: SignInDto) {
+    const result = await this.authService.signIn(signInDto);
+    // check email
+    // check password
   }
 }

@@ -1,9 +1,11 @@
+import { SignInDto } from './dto/sign-in.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
 import { UserService } from '../user/user.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { Injectable } from '@nestjs/common';
 import {
+  checkPassword,
   excludeFields,
   getSalt,
   getVerifyCode,
@@ -19,7 +21,7 @@ export class AuthService {
     private prismaService: PrismaService,
   ) {}
 
-  async register(signUpDto: SignUpDto) {
+  async signUp(signUpDto: SignUpDto) {
     const { name, email, password } = signUpDto;
 
     const user = await this.prismaService.user.findUnique({
@@ -64,5 +66,38 @@ export class AuthService {
       'Email or Password is not correct',
       null,
     );
+  }
+
+  async signIn(signInDto: SignInDto) {
+    const { email, password } = signInDto;
+    // init
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+    // check email
+    if (!user) {
+      return new ResponseStandard(
+        true,
+        ErrorCode.EMAIL_PASSWORD_EXISTED,
+        'Email or Password is not correct',
+        null,
+      );
+    }
+    // check password
+    const isCorrectPassword = await checkPassword(
+      password,
+      user.hashedPassword,
+      user.salt,
+    );
+    if (!isCorrectPassword) {
+      return new ResponseStandard(
+        true,
+        ErrorCode.EMAIL_PASSWORD_EXISTED,
+        'Email or Password is not correct',
+        null,
+      );
+    }
   }
 }

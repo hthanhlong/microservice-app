@@ -13,18 +13,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// INIT MODELS
 model User {
-  id             Int      @id @default(autoincrement())
-  uuid           String   @default(uuid())
-  email          String   @unique @db.VarChar(128)
-  name           String?  @db.VarChar(64)
-  hashedPassword String
-  salt           String
-  verifyCode     String
-  isVerified     Boolean  @default(false)
-  phone          String?  @db.VarChar(20)
-  address        String?  @db.VarChar(256)
-  isDeleted      Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               Int              @id @default(autoincrement())
+  uuid             String           @default(uuid())
+  email            String           @unique @db.VarChar(128)
+  name             String?          @db.VarChar(64)
+  hashedPassword   String
+  salt             String
+  verifyCode       String
+  isVerified       Boolean          @default(false)
+  phone            String?          @db.VarChar(20)
+  address          String?          @db.VarChar(256)
+  isDeleted        Boolean          @default(false)
+  subscriptionType SubscriptionType @default(BASIC)
+  expiresAtSub     DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+// INIT ENUMS
+enum SubscriptionType {
+  BASIC
+  PREMIUM
 }
