@@ -42,7 +42,7 @@ export class AuthService {
           hashedPassword: hashedPassword,
           verifyCode: verifyCode,
           salt: salt,
-          isVerified: false,
+          subscriptionType: 'BASIC',
         },
       });
 

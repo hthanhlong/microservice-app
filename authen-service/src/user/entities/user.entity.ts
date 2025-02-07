@@ -1,56 +1,58 @@
 import {
   IsBoolean,
   IsEmail,
-  IsNotEmpty,
   IsNumber,
   IsString,
   MaxLength,
-  MinLength,
   IsDate,
+  IsEnum,
 } from 'class-validator';
+
+enum SubscriptionType {
+  BASIC = 'BASIC',
+  PREMIUM = 'PREMIUM',
+}
 
 export class UserEntity {
   @IsNumber()
-  id: string;
+  id: number;
+
+  @IsString()
+  uuid: string;
 
   @IsEmail()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(64)
+  @MaxLength(128)
   email: string;
 
   @IsString()
-  @MaxLength(64)
-  @IsNotEmpty()
+  @MaxLength(128)
   name: string;
 
   @IsString()
-  @IsNotEmpty()
   hashedPassword: string;
 
   @IsString()
-  @MaxLength(4)
-  @MinLength(4)
-  @IsNotEmpty()
   salt: string;
 
   @IsString()
-  @MaxLength(6)
-  @MinLength(6)
-  @IsNotEmpty()
   verifyCode: string;
+
+  @IsString()
+  @IsEnum(SubscriptionType)
+  subscriptionType: string;
+
+  @IsDate()
+  expiresAtSub: Date;
 
   @IsBoolean()
   isVerified: boolean;
 
   @IsString()
-  @MaxLength(10)
-  @MinLength(10)
-  @IsNotEmpty()
+  @MaxLength(20)
   Phone: string;
 
   @IsString()
-  @IsNotEmpty()
+  @MaxLength(1000)
   Address: string;
 
   @IsBoolean()

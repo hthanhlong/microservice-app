@@ -15,25 +15,19 @@ datasource db {
 
 // INIT MODELS
 model User {
-  id               Int              @id @default(autoincrement())
-  uuid             String           @default(uuid())
-  email            String           @unique @db.VarChar(128)
-  name             String?          @db.VarChar(64)
+  id               Int       @id @default(autoincrement())
+  uuid             String    @default(uuid())
+  email            String    @unique @db.VarChar(128)
+  name             String    @db.VarChar(64)
   hashedPassword   String
   salt             String
   verifyCode       String
-  isVerified       Boolean          @default(false)
-  phone            String?          @db.VarChar(20)
-  address          String?          @db.VarChar(256)
-  isDeleted        Boolean          @default(false)
-  subscriptionType SubscriptionType @default(BASIC)
+  isVerified       Boolean   @default(false)
+  phone            String?   @db.VarChar(20)
+  address          String?   @db.VarChar(1000)
+  isDeleted        Boolean   @default(false)
+  subscriptionType String
   expiresAtSub     DateTime?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-}
-
-// INIT ENUMS
-enum SubscriptionType {
-  BASIC
-  PREMIUM
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
