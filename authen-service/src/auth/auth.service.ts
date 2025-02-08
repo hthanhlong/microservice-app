@@ -15,7 +15,10 @@ import { ResponseStandard } from 'src/classes';
 import { ErrorCode } from 'src/enum';
 @Injectable()
 export class AuthService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   async signUp(signUpDto: SignUpDto) {
     const { name, email, password } = signUpDto;
@@ -89,6 +92,7 @@ export class AuthService {
       user.hashedPassword,
       user.salt,
     );
+
     if (!isCorrectPassword) {
       return new ResponseStandard(
         true,
@@ -97,5 +101,23 @@ export class AuthService {
         null,
       );
     }
+    // todo with jwt
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      'Sign in successfully',
+      user.uuid,
+    );
   }
+
+  // async validateUser(email: string, password: string) {
+  //   const user = await this.prismaService.user.findUnique({ where: { email } });
+
+  //   if (user && user.password === password) {
+  //     const payload = { sub: user.id, vendorUuid: user.vendorUuid }; // Thêm vendorUuid vào token
+  //     return { access_token: this.jwtService.sign(payload) };
+  //   }
+
+  //   return null;
+  // }
 }

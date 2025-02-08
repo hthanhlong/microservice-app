@@ -9,3 +9,8 @@ export enum SubscriptionType {
   BASIC = 'BASIC',
   PREMIUM = 'PREMIUM',
 }
+
+export enum Role {
+  USER = 'USER',
+  VENDOR = 'VENDOR',
+}
