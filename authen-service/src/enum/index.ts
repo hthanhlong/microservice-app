@@ -4,3 +4,8 @@ export enum ErrorCode {
   BAD_REQUEST = 10543,
   EMAIL_PASSWORD_EXISTED = 83478,
 }
+
+export enum SubscriptionType {
+  BASIC = 'BASIC',
+  PREMIUM = 'PREMIUM',
+}

@@ -1,8 +1,8 @@
-import { SignInDto } from './dto/sign-in.dto';
+import { SignInDto } from '../dto/auth/sign-in.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
 import { UserService } from '../user/user.service';
-import { SignUpDto } from './dto/sign-up.dto';
+import { SignUpDto } from '../dto/auth/sign-up.dto';
 import { Injectable } from '@nestjs/common';
 import {
   checkPassword,
@@ -15,11 +15,7 @@ import { ResponseStandard } from 'src/classes';
 import { ErrorCode } from 'src/enum';
 @Injectable()
 export class AuthService {
-  constructor(
-    private UserService: UserService,
-    private jwtService: JwtService,
-    private prismaService: PrismaService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   async signUp(signUpDto: SignUpDto) {
     const { name, email, password } = signUpDto;
@@ -42,7 +38,8 @@ export class AuthService {
           hashedPassword: hashedPassword,
           verifyCode: verifyCode,
           salt: salt,
-          subscriptionType: 'BASIC',
+          isVendor: false,
+          subsType: 'BASIC',
         },
       });
 
@@ -55,7 +52,8 @@ export class AuthService {
           'isDeleted',
           'isVerified',
           'salt',
-          'id',
+          'isVendor',
+          'vendorUuid',
         ]),
       );
     }

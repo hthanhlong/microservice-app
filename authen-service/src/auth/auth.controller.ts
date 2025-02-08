@@ -3,13 +3,10 @@ import {
   Post,
   Get,
   Body,
-  HttpStatus,
-  HttpCode,
   BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignUpDto } from './dto/sign-up.dto';
-import { SignInDto } from './dto/sign-in.dto';
+import { SignInDto, SignUpDto } from '../dto';
 
 @Controller('auth')
 export class AuthController {
