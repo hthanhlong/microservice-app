@@ -1,14 +1,9 @@
-export class ResponseStandard {
+export class ResponseStandard<T> {
   hasError: boolean;
   errorCode: number;
   message: string;
-  data: unknown;
-  constructor(
-    hasError: boolean,
-    errorCode: number,
-    message: string,
-    data: unknown,
-  ) {
+  data: T;
+  constructor(hasError: boolean, errorCode: number, message: string, data: T) {
     this.hasError = hasError;
     this.errorCode = errorCode;
     this.message = message;

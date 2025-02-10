@@ -28,7 +28,6 @@ model User {
   isDeleted      Boolean   @default(false)
   subsType       String
   expiresAtSub   DateTime?
-  isVendor       Boolean
   VendorUuid     Int?
   Vendor         Vendor?
   createdAt      DateTime  @default(now())

@@ -1,8 +1,5 @@
-import { SignInDto } from '../dto/auth/sign-in.dto';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma.service';
-import { UserService } from '../user/user.service';
-import { SignUpDto } from '../dto/auth/sign-up.dto';
+import { PrismaService } from '../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
   checkPassword,
@@ -10,9 +7,13 @@ import {
   getSalt,
   getVerifyCode,
   hashedPasswordFunc,
-} from '../helper';
-import { ResponseStandard } from 'src/classes';
-import { ErrorCode } from 'src/enum';
+} from '../../helper';
+import { ResponseStandard } from '../../classes';
+import { ErrorCode } from '../../enum';
+import * as jwt from 'jsonwebtoken';
+import { SignInDto, SignUpDto } from './dto/request';
+import { SignInResponseDto, SignUpResponseDto } from './dto/response';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,7 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto) {
+  async signUp(signUpDto: SignUpDto): Promise<ResponseStandard<SignUpResponseDto>> {
     const { name, email, password } = signUpDto;
 
     const user = await this.prismaService.user.findUnique({
@@ -69,7 +70,7 @@ export class AuthService {
     );
   }
 
-  async signIn(signInDto: SignInDto) {
+  async signIn(signInDto: SignInDto): Promise<ResponseStandard<SignInResponseDto>> {
     const { email, password } = signInDto;
     // init
     const user = await this.prismaService.user.findUnique({
@@ -101,11 +102,19 @@ export class AuthService {
         null,
       );
     }
+
+    const accessToken = jwt.sign({ id: user.id }, 'access_secret', {
+      expiresIn: '15m',
+    });
+    const refreshToken = jwt.sign({ id: user.id }, 'refresh_secret', {
+      expiresIn: '7d',
+    });
+
     // todo with jwt
     return new ResponseStandard(
       false,
       ErrorCode.NONE,
-      'Sign in successfully',
+      'Sign in successfully',``
       user.uuid,
     );
   }
@@ -114,7 +123,7 @@ export class AuthService {
   //   const user = await this.prismaService.user.findUnique({ where: { email } });
 
   //   if (user && user.password === password) {
-  //     const payload = { sub: user.id, vendorUuid: user.vendorUuid }; // Thêm vendorUuid vào token
+  //     const payload = { sub: user.id, vendorUuid: user.vendorUuid }; // add vendorUuid vào token
   //     return { access_token: this.jwtService.sign(payload) };
   //   }
 
