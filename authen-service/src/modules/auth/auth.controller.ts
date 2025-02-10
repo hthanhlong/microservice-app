@@ -16,7 +16,7 @@ export class AuthController {
   @Post('sign-up')
   async signUp(
     @Body() signUpDto: SignUpDto,
-  ): Promise<ResponseStandard<SignUpResponseDto>> {
+  ): Promise<ResponseStandard<SignUpResponseDto | null>> {
     const result = await this.authService.signUp(signUpDto);
     const { hasError, message } = result;
     if (hasError) throw new BadRequestException(message);
@@ -26,7 +26,7 @@ export class AuthController {
   @Get('sign-in')
   async signIn(
     @Body() signInDto: SignInDto,
-  ): Promise<ResponseStandard<SignInResponseDto>> {
+  ): Promise<ResponseStandard<SignInResponseDto | null>> {
     const result = await this.authService.signIn(signInDto);
     const { hasError, message } = result;
     if (hasError) throw new BadRequestException(message);

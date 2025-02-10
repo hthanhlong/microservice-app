@@ -1,9 +1,9 @@
+import { Test } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
   checkPassword,
-  excludeFields,
   getSalt,
   getVerifyCode,
   hashedPasswordFunc,
@@ -13,15 +13,19 @@ import { ErrorCode } from '../../enum';
 import * as jwt from 'jsonwebtoken';
 import { SignInDto, SignUpDto } from './dto/request';
 import { SignInResponseDto, SignUpResponseDto } from './dto/response';
-
+import { plainToInstance } from 'class-transformer';
+import { RedisService } from '../redis/redis.service';
 @Injectable()
 export class AuthService {
   constructor(
     private prismaService: PrismaService,
     private jwtService: JwtService,
+    private redisService: RedisService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto): Promise<ResponseStandard<SignUpResponseDto>> {
+  async signUp(
+    signUpDto: SignUpDto,
+  ): Promise<ResponseStandard<SignUpResponseDto | null>> {
     const { name, email, password } = signUpDto;
 
     const user = await this.prismaService.user.findUnique({
@@ -42,26 +46,23 @@ export class AuthService {
           hashedPassword: hashedPassword,
           verifyCode: verifyCode,
           salt: salt,
-          isVendor: false,
-          subsType: 'BASIC',
+          isVerified: false, // fix later
         },
+      });
+
+      // map DTO
+      const response = plainToInstance(SignUpResponseDto, user, {
+        excludeExtraneousValues: true,
       });
 
       return new ResponseStandard(
         false,
         ErrorCode.NONE,
         'User was created successfully',
-        excludeFields(user, [
-          'hashedPassword',
-          'isDeleted',
-          'isVerified',
-          'salt',
-          'isVendor',
-          'vendorUuid',
-        ]),
+        response,
       );
     }
-
+    // existed email
     return new ResponseStandard(
       true,
       ErrorCode.EMAIL_PASSWORD_EXISTED,
@@ -70,7 +71,9 @@ export class AuthService {
     );
   }
 
-  async signIn(signInDto: SignInDto): Promise<ResponseStandard<SignInResponseDto>> {
+  async signIn(
+    signInDto: SignInDto,
+  ): Promise<ResponseStandard<SignInResponseDto | null>> {
     const { email, password } = signInDto;
     // init
     const user = await this.prismaService.user.findUnique({
@@ -103,30 +106,56 @@ export class AuthService {
       );
     }
 
-    const accessToken = jwt.sign({ id: user.id }, 'access_secret', {
-      expiresIn: '15m',
-    });
-    const refreshToken = jwt.sign({ id: user.id }, 'refresh_secret', {
-      expiresIn: '7d',
-    });
+    const accessToken = jwt.sign(
+      {
+        uuid: user.uuid,
+        email: user.email,
+        vendorUuid: user.VendorUuid,
+      },
+      'access_secret', // TODO: change to env
+      {
+        expiresIn: '15m', // TODO: change to env
+      },
+    );
 
-    // todo with jwt
+    const refreshToken = jwt.sign(
+      {
+        uuid: user.uuid,
+        email: user.email,
+        vendorUuid: user.VendorUuid,
+      },
+      'refresh_secret', // TODO: change to env
+      {
+        expiresIn: '7d', // TODO: change to env
+      },
+    );
+
+    // save refresh token to redis
+    const TIME_EXPIRE_REFRESH_TOKEN = 60 * 60 * 24 * 7; // 7 days
+
+    await this.redisService.set(
+      user.uuid,
+      refreshToken,
+      TIME_EXPIRE_REFRESH_TOKEN,
+    );
+
+    // map DTO
+    const response = plainToInstance(
+      SignInResponseDto,
+      {
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
     return new ResponseStandard(
       false,
       ErrorCode.NONE,
-      'Sign in successfully',``
-      user.uuid,
+      'Sign in successfully',
+      response,
     );
   }
-
-  // async validateUser(email: string, password: string) {
-  //   const user = await this.prismaService.user.findUnique({ where: { email } });
-
-  //   if (user && user.password === password) {
-  //     const payload = { sub: user.id, vendorUuid: user.vendorUuid }; // add vendorUuid vào token
-  //     return { access_token: this.jwtService.sign(payload) };
-  //   }
-
-  //   return null;
-  // }
 }

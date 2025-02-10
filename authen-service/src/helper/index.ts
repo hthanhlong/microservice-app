@@ -1,14 +1,5 @@
 import bcrypt from 'bcrypt';
 
-export function excludeFields<T, Key extends keyof T>(
-  obj: T,
-  keys: Key[],
-): Omit<T, Key> {
-  const newObj = { ...obj };
-  keys.forEach((key) => delete newObj[key]);
-  return newObj;
-}
-
 export async function getSalt(): Promise<string> {
   const SALT_ROUNDS: number = 10;
   const salt: string = await bcrypt.genSalt(SALT_ROUNDS);

@@ -3,7 +3,7 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
-  private client: Redis;
+  private client!: Redis;
 
   onModuleInit() {
     this.client = new Redis({
@@ -12,7 +12,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('connect', () => console.log('✅ Connected to Redis'));
-    this.client.on('error', (err) => console.error('❌ Redis Error:', err));
+    this.client.on('error', (err: Error) =>
+      console.error('❌ Redis Error:', err),
+    );
   }
 
   async set(key: string, value: string, ttl?: number) {
