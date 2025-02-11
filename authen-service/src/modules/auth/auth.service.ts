@@ -1,5 +1,3 @@
-import { Test } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
@@ -19,7 +17,6 @@ import { RedisService } from '../redis/redis.service';
 export class AuthService {
   constructor(
     private prismaService: PrismaService,
-    private jwtService: JwtService,
     private redisService: RedisService,
   ) {}
 
@@ -106,45 +103,25 @@ export class AuthService {
       );
     }
 
-    const accessToken = jwt.sign(
-      {
-        uuid: user.uuid,
-        email: user.email,
-        vendorUuid: user.VendorUuid,
-      },
-      'access_secret', // TODO: change to env
-      {
-        expiresIn: '15m', // TODO: change to env
-      },
-    );
+    const tokens = await this.generateTokens(user.uuid);
 
-    const refreshToken = jwt.sign(
-      {
-        uuid: user.uuid,
-        email: user.email,
-        vendorUuid: user.VendorUuid,
-      },
-      'refresh_secret', // TODO: change to env
-      {
-        expiresIn: '7d', // TODO: change to env
-      },
-    );
+    if (!tokens) {
+      return new ResponseStandard(
+        true,
+        ErrorCode.INTERNAL_SERVER_ERROR,
+        'Internal server error',
+        null,
+      );
+    }
 
-    // save refresh token to redis
-    const TIME_EXPIRE_REFRESH_TOKEN = 60 * 60 * 24 * 7; // 7 days
-
-    await this.redisService.set(
-      user.uuid,
-      refreshToken,
-      TIME_EXPIRE_REFRESH_TOKEN,
-    );
+    await this.storeRefreshToken(tokens.refreshToken, user.uuid);
 
     // map DTO
     const response = plainToInstance(
       SignInResponseDto,
       {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
       },
       {
         excludeExtraneousValues: true,
@@ -157,5 +134,70 @@ export class AuthService {
       'Sign in successfully',
       response,
     );
+  }
+
+  verifyRefreshToken(refreshToken: string): {
+    userUuid: string;
+    email: string;
+    vendorUuid: string;
+  } {
+    const decoded = jwt.verify(refreshToken, 'refresh_secret') as {
+      userUuid: string;
+      email: string;
+      vendorUuid: string;
+    };
+    return decoded;
+  }
+
+  async storeRefreshToken(refreshToken: string, userUuid: string) {
+    const hasRefreshToken = await this.redisService.get(userUuid);
+    if (hasRefreshToken) {
+      await this.redisService.del(userUuid);
+    }
+    const TIME_EXPIRE_REFRESH_TOKEN = 60 * 60 * 24 * 7; // 7 days
+    await this.redisService.set(
+      userUuid,
+      refreshToken,
+      TIME_EXPIRE_REFRESH_TOKEN,
+    );
+  }
+
+  async generateTokens(userUuid: string): Promise<{
+    accessToken: string;
+    refreshToken: string;
+  } | null> {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        uuid: userUuid,
+      },
+    });
+
+    if (!user) return null;
+
+    const accessToken = jwt.sign(
+      {
+        uuid: userUuid,
+        email: user.email,
+        vendorUuid: user.vendorUuid,
+      },
+      'access_secret', // TODO: change to env
+      {
+        expiresIn: '15m', // TODO: change to env
+      },
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        uuid: userUuid,
+        email: user.email,
+        vendorUuid: user.vendorUuid,
+      },
+      'refresh_secret', // TODO: change to env
+      {
+        expiresIn: '7d', // TODO: change to env
+      },
+    );
+
+    return { accessToken, refreshToken };
   }
 }
