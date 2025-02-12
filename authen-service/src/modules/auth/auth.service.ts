@@ -1,18 +1,19 @@
 import { PrismaService } from '../prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   checkPassword,
   getSalt,
   getVerifyCode,
   hashedPasswordFunc,
+  mapResponseToDto,
 } from '../../helper';
 import { ResponseStandard } from '../../classes';
 import { ErrorCode } from '../../enum';
 import * as jwt from 'jsonwebtoken';
 import { SignInDto, SignUpDto } from './dto/request';
 import { SignInResponseDto, SignUpResponseDto } from './dto/response';
-import { plainToInstance } from 'class-transformer';
 import { RedisService } from '../redis/redis.service';
+import axios from 'axios';
 @Injectable()
 export class AuthService {
   constructor(
@@ -48,9 +49,7 @@ export class AuthService {
       });
 
       // map DTO
-      const response = plainToInstance(SignUpResponseDto, user, {
-        excludeExtraneousValues: true,
-      });
+      const response = mapResponseToDto(user, SignUpResponseDto);
 
       return new ResponseStandard(
         false,
@@ -104,30 +103,8 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user.uuid);
-
-    if (!tokens) {
-      return new ResponseStandard(
-        true,
-        ErrorCode.INTERNAL_SERVER_ERROR,
-        'Internal server error',
-        null,
-      );
-    }
-
     await this.storeRefreshToken(tokens.refreshToken, user.uuid);
-
-    // map DTO
-    const response = plainToInstance(
-      SignInResponseDto,
-      {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-      },
-      {
-        excludeExtraneousValues: true,
-      },
-    );
-
+    const response = mapResponseToDto(tokens, SignInResponseDto);
     return new ResponseStandard(
       false,
       ErrorCode.NONE,
@@ -150,6 +127,7 @@ export class AuthService {
   }
 
   async storeRefreshToken(refreshToken: string, userUuid: string) {
+    // todo build log
     const hasRefreshToken = await this.redisService.get(userUuid);
     if (hasRefreshToken) {
       await this.redisService.del(userUuid);
@@ -165,14 +143,14 @@ export class AuthService {
   async generateTokens(userUuid: string): Promise<{
     accessToken: string;
     refreshToken: string;
-  } | null> {
+  }> {
     const user = await this.prismaService.user.findUnique({
       where: {
         uuid: userUuid,
       },
     });
 
-    if (!user) return null;
+    if (!user) throw new BadRequestException();
 
     const accessToken = jwt.sign(
       {
@@ -199,5 +177,60 @@ export class AuthService {
     );
 
     return { accessToken, refreshToken };
+  }
+
+  async verifyGoogleIdToken(idToken: string): Promise<{
+    email: string;
+    name: string;
+  }> {
+    const { data } = await axios.get(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`,
+    );
+
+    return data as {
+      email: string;
+      name: string;
+    };
+  }
+
+  async googleSignIn(
+    idToken: string,
+  ): Promise<ResponseStandard<SignInResponseDto | null>> {
+    const { email, name } = await this.verifyGoogleIdToken(idToken);
+
+    let user = await this.prismaService.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+    // if user not found, create new user
+    if (!user) {
+      const salt = await getSalt();
+      const randomPassword = Math.random().toString(36).substring(2, 15);
+      const hashedPassword = await hashedPasswordFunc(randomPassword, salt);
+      const verifyCode = getVerifyCode();
+      user = await this.prismaService.user.create({
+        data: {
+          email: email,
+          name: name,
+          isVerified: true,
+          hashedPassword: hashedPassword,
+          salt: salt,
+          verifyCode: verifyCode,
+          subsType: 'BASIC',
+          isDeleted: false,
+        },
+      });
+    }
+
+    const tokens = await this.generateTokens(user.uuid);
+    await this.storeRefreshToken(tokens.refreshToken, user.uuid);
+    const response = mapResponseToDto(tokens, SignInResponseDto);
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      'Sign in successfully',
+      response,
+    );
   }
 }

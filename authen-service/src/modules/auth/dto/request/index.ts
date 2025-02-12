@@ -41,3 +41,9 @@ export class SignUpDto {
   @MaxLength(1000)
   address: string;
 }
+
+export class SignInWithGoogleDto {
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
+}

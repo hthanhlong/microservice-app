@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ResponseStandard } from '../../classes';
-import { SignInDto, SignUpDto } from './dto/request';
+import { SignInDto, SignInWithGoogleDto, SignUpDto } from './dto/request';
 import { SignInResponseDto, SignUpResponseDto } from './dto/response';
 import { Response, Request } from 'express';
 @Controller('auth')
@@ -57,14 +57,14 @@ export class AuthController {
 
   @Post('refresh')
   async refreshTokens(@Req() req: Request, @Res() res: Response) {
-    const refreshToken = req.cookies?.refresh_token;
+    const _refreshToken = req.cookies?.refresh_token;
 
-    if (!refreshToken) {
+    if (!_refreshToken) {
       throw new UnauthorizedException('Refresh token is required');
     }
 
     const { userUuid } = this.authService.verifyRefreshToken(
-      refreshToken as string,
+      _refreshToken as string,
     );
 
     if (!userUuid) {
@@ -73,21 +73,14 @@ export class AuthController {
 
     const tokens = await this.authService.generateTokens(userUuid);
 
-    if (!tokens) {
-      throw new UnauthorizedException('Internal server error');
-    }
+    await this.authService.storeRefreshToken(userUuid, tokens.refreshToken);
 
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-      tokens;
-
-    await this.authService.storeRefreshToken(userUuid, newRefreshToken);
-
-    res.cookie('access_token', newAccessToken, {
+    res.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
     });
-    res.cookie('refresh_token', newRefreshToken, {
+    res.cookie('refresh_token', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
@@ -95,5 +88,33 @@ export class AuthController {
     });
 
     return res.json({ message: 'Token refreshed' });
+  }
+
+  @Post('google/sign-in')
+  async googleSignIn(
+    @Body() signInWithGoogleDto: SignInWithGoogleDto,
+    @Res() res: Response,
+  ): Promise<ResponseStandard<SignInResponseDto | null>> {
+    const result = await this.authService.googleSignIn(
+      signInWithGoogleDto.idToken,
+    );
+    const { hasError, message } = result;
+    if (hasError || !result.data) throw new BadRequestException(message);
+    const { accessToken, refreshToken } = result.data;
+    // set cookies
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/auth/refresh',
+    });
+
+    return result;
   }
 }

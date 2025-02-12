@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
 
 export async function getSalt(): Promise<string> {
   const SALT_ROUNDS: number = 10;
@@ -25,3 +26,9 @@ export async function hashedPasswordFunc(
 export const getVerifyCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
+
+export function mapResponseToDto<T>(data: any, dto: new () => T): T {
+  return plainToInstance(dto, data, {
+    excludeExtraneousValues: true,
+  });
+}
