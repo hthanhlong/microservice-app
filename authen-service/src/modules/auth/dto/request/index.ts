@@ -47,3 +47,24 @@ export class SignInWithGoogleDto {
   @IsNotEmpty()
   idToken: string;
 }
+
+export class SignUpVendorDto {
+  @IsString()
+  @IsNotEmpty()
+  userUuid: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  businessName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  businessAddress: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  businessLicense: string;
+}

@@ -1,16 +1,25 @@
 import { Controller, Post, Get, Body, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ErrorResponse, ResponseStandard } from '../../classes';
-import { SignInDto, SignInWithGoogleDto, SignUpDto } from './dto/request';
-import { SignInResponseDto, SignUpResponseDto } from './dto/response';
+import {
+  SignInDto,
+  SignInWithGoogleDto,
+  SignUpDto,
+  SignUpVendorDto,
+} from './dto/request';
+import {
+  SignInResponseDto,
+  SignUpResponseDto,
+  SignUpVendorResponseDto,
+} from './dto/response';
 import { Request } from 'express';
 import { ErrorCode, ErrorMessage } from '../../enum';
-
-@Controller('auth')
+import { AUTH_PREFIX, ENDPOINTS } from './routes';
+@Controller(AUTH_PREFIX)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('sign-up')
+  @Post(ENDPOINTS.signUp)
   async signUp(
     @Body() signUpDto: SignUpDto,
   ): Promise<ResponseStandard<SignUpResponseDto | null>> {
@@ -31,7 +40,7 @@ export class AuthController {
     );
   }
 
-  @Get('sign-in')
+  @Get(ENDPOINTS.signIn)
   async signIn(
     @Body() signInDto: SignInDto,
   ): Promise<ResponseStandard<SignInResponseDto | null>> {
@@ -52,7 +61,7 @@ export class AuthController {
     );
   }
 
-  @Post('refresh')
+  @Post(ENDPOINTS.refreshTokens)
   async refreshTokens(
     @Req() req: Request,
   ): Promise<ResponseStandard<SignInResponseDto | null>> {
@@ -85,7 +94,7 @@ export class AuthController {
     );
   }
 
-  @Post('google/sign-in')
+  @Post(ENDPOINTS.googleSignIn)
   async googleSignIn(
     @Body() signInWithGoogleDto: SignInWithGoogleDto,
   ): Promise<ResponseStandard<SignInResponseDto | null>> {
@@ -105,6 +114,47 @@ export class AuthController {
       false,
       ErrorCode.NONE,
       ErrorMessage.GOOGLE_SIGN_IN_SUCCESS,
+      result,
+    );
+  }
+
+  @Post(ENDPOINTS.logout)
+  async logout(@Req() req: Request) {
+    const refreshToken = req.cookies?.refresh_token as string;
+    if (!refreshToken) {
+      return new ResponseStandard(
+        true,
+        ErrorCode.REFRESH_TOKEN_REQUIRED,
+        ErrorMessage.REFRESH_TOKEN_REQUIRED,
+        null,
+      );
+    }
+    await this.authService.logout(refreshToken);
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.LOGOUT_SUCCESS,
+      null,
+    );
+  }
+
+  @Post(ENDPOINTS.signUpVendor)
+  async signUpVendor(
+    @Body() signUpVendorDto: SignUpVendorDto,
+  ): Promise<ResponseStandard<SignUpVendorResponseDto | null>> {
+    const result = await this.authService.signUpVendor(signUpVendorDto);
+    if (result instanceof ErrorResponse) {
+      return new ResponseStandard(
+        true,
+        result.errorCode,
+        ErrorMessage.SIGN_UP_VENDOR_FAILED,
+        null,
+      );
+    }
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.SIGN_UP_VENDOR_SUCCESS,
       result,
     );
   }

@@ -5,22 +5,36 @@ import {
   Get,
   Res,
   BadRequestException,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { SignUpDto, SignInDto, SignInWithGoogleDto } from './dto/request';
+import {
+  SignUpDto,
+  SignInDto,
+  SignInWithGoogleDto,
+  SignUpVendorDto,
+} from './dto/request';
 import { AxiosService } from '../axios/axios.service';
 import { ResponseStandard } from '../../classes';
-import { SignUpResponseDto, SignInResponseDto } from './dto/response';
-import { Response } from 'express';
+import {
+  SignUpResponseDto,
+  SignInResponseDto,
+  SignUpVendorResponseDto,
+} from './dto/response';
+import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-
-@Controller('auth')
+import { ENDPOINTS, AUTH_PREFIX } from './routes';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+@Controller(AUTH_PREFIX)
 export class AuthController {
   private readonly authServiceUrl = process.env.AUTHENTICATION_SERVICE_URL;
 
   private authRoutesMap = {
-    signUp: `${this.authServiceUrl}/auth/sign-up`,
-    signIn: `${this.authServiceUrl}/auth/sign-in`,
-    googleSignIn: `${this.authServiceUrl}/auth/google/sign-in`,
+    signUp: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.signUp}`,
+    signIn: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.signIn}`,
+    googleSignIn: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.googleSignIn}`,
+    refreshTokens: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.refreshTokens}`,
+    signUpVendor: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.signUpVendor}`,
   };
 
   constructor(
@@ -28,21 +42,19 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
-  @Post('sign-up')
+  @Post(ENDPOINTS.signUp)
   async signUp(
     @Body() signUpDto: SignUpDto,
   ): Promise<ResponseStandard<SignUpResponseDto>> {
     const result = await this.axiosService.post<
       ResponseStandard<SignUpResponseDto>
     >(this.authRoutesMap.signUp, signUpDto);
-
     const { hasError, message } = result;
     if (hasError || !result.data) throw new BadRequestException(message);
-
     return result;
   }
 
-  @Get('sign-in')
+  @Get(ENDPOINTS.signIn)
   async signIn(
     @Body() signInDto: SignInDto,
     @Res() res: Response,
@@ -50,14 +62,13 @@ export class AuthController {
     const result = await this.axiosService.post<
       ResponseStandard<SignInResponseDto>
     >(this.authRoutesMap.signIn, signInDto);
-
     const { hasError, message } = result;
     if (hasError || !result.data) throw new BadRequestException(message);
     this.authService.setCookies(res, result.data);
     return result;
   }
 
-  @Post('google/sign-in')
+  @Post(ENDPOINTS.googleSignIn)
   async googleSignIn(
     @Body() signInWithGoogleDto: SignInWithGoogleDto,
     @Res() res: Response,
@@ -65,10 +76,38 @@ export class AuthController {
     const result = await this.axiosService.post<
       ResponseStandard<SignInResponseDto>
     >(this.authRoutesMap.googleSignIn, signInWithGoogleDto);
-
     const { hasError, message } = result;
     if (hasError || !result.data) throw new BadRequestException(message);
     this.authService.setCookies(res, result.data);
+    return result;
+  }
+
+  @Post(ENDPOINTS.refreshTokens)
+  async refreshTokens(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<ResponseStandard<SignInResponseDto | null>> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const refreshToken = req.cookies?.refresh_token as string;
+    if (!refreshToken)
+      throw new BadRequestException('Refresh token is required');
+    const result = await this.axiosService.post<
+      ResponseStandard<SignInResponseDto>
+    >(this.authRoutesMap.refreshTokens, { refreshToken });
+    const { hasError, message } = result;
+    if (hasError || !result.data) throw new BadRequestException(message);
+    this.authService.setCookies(res, result.data);
+    return result;
+  }
+
+  @Post(ENDPOINTS.signUpVendor)
+  @UseGuards(JwtAuthGuard)
+  async signUpVendor(
+    @Body() signUpVendorDto: SignUpVendorDto,
+  ): Promise<ResponseStandard<SignUpVendorResponseDto>> {
+    const result = await this.axiosService.post<
+      ResponseStandard<SignUpVendorResponseDto>
+    >(this.authRoutesMap.signUpVendor, signUpVendorDto);
     return result;
   }
 }

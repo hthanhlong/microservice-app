@@ -9,8 +9,12 @@ import {
 } from '../../helper';
 import { ErrorResponse } from '../../classes';
 import { ErrorCode } from '../../enum';
-import { SignInDto, SignUpDto } from './dto/request';
-import { SignInResponseDto, SignUpResponseDto } from './dto/response';
+import { SignUpVendorDto, SignInDto, SignUpDto } from './dto/request';
+import {
+  SignInResponseDto,
+  SignUpResponseDto,
+  SignUpVendorResponseDto,
+} from './dto/response';
 import { RedisService } from '../redis/redis.service';
 import axios from 'axios';
 import { JwtService } from '@nestjs/jwt';
@@ -18,16 +22,19 @@ import * as fs from 'fs';
 import * as path from 'path';
 @Injectable()
 export class AuthService {
-  private privateKey = fs.readFileSync(
-    path.resolve(__dirname, 'private.key'),
-    'utf8',
-  );
+  private privateKey: string;
+  private publicKey: string;
 
   constructor(
     private prismaService: PrismaService,
     private redisService: RedisService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    this.privateKey = fs.readFileSync(
+      path.resolve(__dirname, '../../keys/private.key'),
+      'utf8',
+    );
+  }
 
   async signUp(
     signUpDto: SignUpDto,
@@ -52,7 +59,7 @@ export class AuthService {
           hashedPassword: hashedPassword,
           verifyCode: verifyCode,
           salt: salt,
-          isVerified: false, // fix later
+          subsType: 'BASIC',
         },
       });
 
@@ -111,11 +118,11 @@ export class AuthService {
     if (!userUuid) {
       return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
-    const tokens = await this._generateTokens(userUuid);
+    const tokens = await this._generateTokens(userUuid as string);
     if (tokens instanceof ErrorResponse) {
       return tokens;
     }
-    await this._storeRefreshToken(tokens.refreshToken, userUuid);
+    await this._storeRefreshToken(tokens.refreshToken, userUuid as string);
     return tokens;
   }
 
@@ -152,7 +159,6 @@ export class AuthService {
       {
         uuid: userUuid,
         email: user.email,
-        vendorUuid: user.vendorUuid,
       },
       {
         privateKey: this.privateKey,
@@ -164,7 +170,6 @@ export class AuthService {
       {
         uuid: userUuid,
         email: user.email,
-        vendorUuid: user.vendorUuid,
       },
       {
         privateKey: this.privateKey,
@@ -226,5 +231,35 @@ export class AuthService {
     await this._storeRefreshToken(tokens.refreshToken, user.uuid);
     const response = mapResponseToDto(tokens, SignInResponseDto);
     return response;
+  }
+
+  async logout(refreshToken: string) {
+    await this.redisService.del(refreshToken);
+  }
+
+  async signUpVendor(signUpVendorDto: SignUpVendorDto) {
+    const { userUuid, businessName, businessAddress, businessLicense } =
+      signUpVendorDto;
+
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        uuid: userUuid,
+      },
+    });
+
+    if (!user) {
+      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+    }
+
+    const vendor = await this.prismaService.vendor.create({
+      data: {
+        userUuId: userUuid,
+        businessName: businessName,
+        businessAddress: businessAddress,
+        businessLicense: businessLicense,
+      },
+    });
+
+    return mapResponseToDto(vendor, SignUpVendorResponseDto);
   }
 }

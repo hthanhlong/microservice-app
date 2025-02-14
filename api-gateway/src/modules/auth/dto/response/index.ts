@@ -15,3 +15,17 @@ export class SignUpResponseDto {
   @Expose()
   refreshToken: string;
 }
+
+export class SignUpVendorResponseDto {
+  @Expose()
+  uuid: string;
+
+  @Expose()
+  businessName: string;
+
+  @Expose()
+  businessAddress: string;
+
+  @Expose()
+  businessLicense: string;
+}

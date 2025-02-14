@@ -28,4 +28,6 @@ export enum ErrorMessage {
   SIGN_UP_SUCCESS = 'Sign up successfully',
   TOKEN_REFRESHED = 'Token refreshed',
   TOKEN_REFRESH_FAILED = 'Token refresh failed',
+  SIGN_UP_VENDOR_SUCCESS = 'Sign up vendor successfully',
+  SIGN_UP_VENDOR_FAILED = 'Sign up vendor failed',
 }
