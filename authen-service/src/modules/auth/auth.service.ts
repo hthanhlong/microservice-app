@@ -1,5 +1,5 @@
 import { PrismaService } from '../prisma/prisma.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   checkPassword,
   getSalt,
@@ -7,7 +7,7 @@ import {
   hashedPasswordFunc,
   mapResponseToDto,
 } from '../../helper';
-import { ResponseStandard } from '../../classes';
+import { ErrorResponse } from '../../classes';
 import { ErrorCode } from '../../enum';
 import { SignInDto, SignUpDto } from './dto/request';
 import { SignInResponseDto, SignUpResponseDto } from './dto/response';
@@ -22,10 +22,6 @@ export class AuthService {
     path.resolve(__dirname, 'private.key'),
     'utf8',
   );
-  private publicKey = fs.readFileSync(
-    path.resolve(__dirname, 'public.key'),
-    'utf8',
-  );
 
   constructor(
     private prismaService: PrismaService,
@@ -35,7 +31,7 @@ export class AuthService {
 
   async signUp(
     signUpDto: SignUpDto,
-  ): Promise<ResponseStandard<SignUpResponseDto | null>> {
+  ): Promise<SignUpResponseDto | ErrorResponse> {
     const { name, email, password } = signUpDto;
 
     const user = await this.prismaService.user.findUnique({
@@ -61,27 +57,16 @@ export class AuthService {
       });
 
       // map DTO
-      const response = mapResponseToDto(user, SignUpResponseDto);
-
-      return new ResponseStandard(
-        false,
-        ErrorCode.NONE,
-        'User was created successfully',
-        response,
-      );
+      const userDto = mapResponseToDto(user, SignUpResponseDto);
+      return userDto;
     }
     // existed email
-    return new ResponseStandard(
-      true,
-      ErrorCode.EMAIL_PASSWORD_EXISTED,
-      'Email or Password is not correct',
-      null,
-    );
+    return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
   }
 
   async signIn(
     signInDto: SignInDto,
-  ): Promise<ResponseStandard<SignInResponseDto | null>> {
+  ): Promise<SignInResponseDto | ErrorResponse> {
     const { email, password } = signInDto;
     // init
     const user = await this.prismaService.user.findUnique({
@@ -91,12 +76,7 @@ export class AuthService {
     });
     // check email
     if (!user) {
-      return new ResponseStandard(
-        true,
-        ErrorCode.EMAIL_PASSWORD_EXISTED,
-        'Email or Password is not correct',
-        null,
-      );
+      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
     // check password
     const isCorrectPassword = await checkPassword(
@@ -106,26 +86,40 @@ export class AuthService {
     );
 
     if (!isCorrectPassword) {
-      return new ResponseStandard(
-        true,
-        ErrorCode.EMAIL_PASSWORD_EXISTED,
-        'Email or Password is not correct',
-        null,
-      );
+      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
 
-    const tokens = await this.generateTokens(user.uuid);
-    await this.storeRefreshToken(tokens.refreshToken, user.uuid);
+    const tokens = await this._generateTokens(user.uuid);
+    if (tokens instanceof ErrorResponse) {
+      return tokens;
+    }
+    await this._storeRefreshToken(tokens.refreshToken, user.uuid);
     const response = mapResponseToDto(tokens, SignInResponseDto);
-    return new ResponseStandard(
-      false,
-      ErrorCode.NONE,
-      'Sign in successfully',
-      response,
-    );
+    return response;
   }
 
-  async storeRefreshToken(refreshToken: string, userUuid: string) {
+  async _verifyRefreshToken(refreshToken: string) {
+    const userUuid = await this.redisService.get(refreshToken);
+    if (!userUuid) {
+      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+    }
+    return userUuid;
+  }
+
+  async refreshTokens(refreshToken: string) {
+    const userUuid = await this._verifyRefreshToken(refreshToken);
+    if (!userUuid) {
+      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+    }
+    const tokens = await this._generateTokens(userUuid);
+    if (tokens instanceof ErrorResponse) {
+      return tokens;
+    }
+    await this._storeRefreshToken(tokens.refreshToken, userUuid);
+    return tokens;
+  }
+
+  async _storeRefreshToken(refreshToken: string, userUuid: string) {
     // todo build log
     const hasRefreshToken = await this.redisService.get(userUuid);
     if (hasRefreshToken) {
@@ -139,17 +133,20 @@ export class AuthService {
     );
   }
 
-  async generateTokens(userUuid: string): Promise<{
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  async _generateTokens(userUuid: string): Promise<
+    | {
+        accessToken: string;
+        refreshToken: string;
+      }
+    | ErrorResponse
+  > {
     const user = await this.prismaService.user.findUnique({
       where: {
         uuid: userUuid,
       },
     });
 
-    if (!user) throw new BadRequestException();
+    if (!user) return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
 
     const accessToken = this.jwtService.sign(
       {
@@ -178,7 +175,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async verifyGoogleIdToken(idToken: string): Promise<{
+  async _verifyGoogleIdToken(idToken: string): Promise<{
     email: string;
     name: string;
   }> {
@@ -194,8 +191,8 @@ export class AuthService {
 
   async googleSignIn(
     idToken: string,
-  ): Promise<ResponseStandard<SignInResponseDto | null>> {
-    const { email, name } = await this.verifyGoogleIdToken(idToken);
+  ): Promise<SignInResponseDto | ErrorResponse> {
+    const { email, name } = await this._verifyGoogleIdToken(idToken);
 
     let user = await this.prismaService.user.findUnique({
       where: {
@@ -222,14 +219,12 @@ export class AuthService {
       });
     }
 
-    const tokens = await this.generateTokens(user.uuid);
-    await this.storeRefreshToken(tokens.refreshToken, user.uuid);
+    const tokens = await this._generateTokens(user.uuid);
+    if (tokens instanceof ErrorResponse) {
+      return tokens;
+    }
+    await this._storeRefreshToken(tokens.refreshToken, user.uuid);
     const response = mapResponseToDto(tokens, SignInResponseDto);
-    return new ResponseStandard(
-      false,
-      ErrorCode.NONE,
-      'Sign in successfully',
-      response,
-    );
+    return response;
   }
 }

@@ -1,18 +1,11 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  BadRequestException,
-  Res,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ResponseStandard } from '../../classes';
+import { ErrorResponse, ResponseStandard } from '../../classes';
 import { SignInDto, SignInWithGoogleDto, SignUpDto } from './dto/request';
 import { SignInResponseDto, SignUpResponseDto } from './dto/response';
-import { Response, Request } from 'express';
+import { Request } from 'express';
+import { ErrorCode, ErrorMessage } from '../../enum';
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -22,99 +15,97 @@ export class AuthController {
     @Body() signUpDto: SignUpDto,
   ): Promise<ResponseStandard<SignUpResponseDto | null>> {
     const result = await this.authService.signUp(signUpDto);
-    const { hasError, message } = result;
-    if (hasError) throw new BadRequestException(message);
-    return result;
+    if (result instanceof ErrorResponse) {
+      return new ResponseStandard(
+        true,
+        result.errorCode,
+        ErrorMessage.SIGN_UP_FAILED,
+        null,
+      );
+    }
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.SIGN_UP_SUCCESS,
+      result,
+    );
   }
 
   @Get('sign-in')
   async signIn(
     @Body() signInDto: SignInDto,
-    @Res() res: Response,
   ): Promise<ResponseStandard<SignInResponseDto | null>> {
     const result = await this.authService.signIn(signInDto);
-    const { hasError, message } = result;
-    if (hasError || !result.data) throw new BadRequestException(message);
-
-    const { accessToken, refreshToken } = result.data;
-
-    // set cookies
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
-
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/auth/refresh',
-    });
-
-    return result;
+    if (result instanceof ErrorResponse) {
+      return new ResponseStandard(
+        true,
+        result.errorCode,
+        ErrorMessage.SIGN_IN_FAILED,
+        null,
+      );
+    }
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.SIGN_IN_SUCCESS,
+      result,
+    );
   }
 
-  // @Post('refresh')
-  // async refreshTokens(@Req() req: Request, @Res() res: Response) {
-  //   const _refreshToken = req.cookies?.refresh_token;
+  @Post('refresh')
+  async refreshTokens(
+    @Req() req: Request,
+  ): Promise<ResponseStandard<SignInResponseDto | null>> {
+    const refreshToken = req.cookies?.refresh_token as string;
 
-  //   if (!_refreshToken) {
-  //     throw new UnauthorizedException('Refresh token is required');
-  //   }
+    if (!refreshToken) {
+      return new ResponseStandard(
+        true,
+        ErrorCode.REFRESH_TOKEN_REQUIRED,
+        ErrorMessage.REFRESH_TOKEN_REQUIRED,
+        null,
+      );
+    }
+    const tokens = await this.authService.refreshTokens(refreshToken);
 
-  //   const { userUuid } = this.authService.verifyRefreshToken(
-  //     _refreshToken as string,
-  //   );
+    if (tokens instanceof ErrorResponse) {
+      return new ResponseStandard(
+        true,
+        tokens.errorCode,
+        ErrorMessage.TOKEN_REFRESH_FAILED,
+        null,
+      );
+    }
 
-  //   if (!userUuid) {
-  //     throw new UnauthorizedException('Invalid refresh token');
-  //   }
-
-  //   const tokens = await this.authService.generateTokens(userUuid);
-
-  //   await this.authService.storeRefreshToken(userUuid, tokens.refreshToken);
-
-  //   res.cookie('access_token', tokens.accessToken, {
-  //     httpOnly: true,
-  //     secure: true,
-  //     sameSite: 'strict',
-  //   });
-  //   res.cookie('refresh_token', tokens.refreshToken, {
-  //     httpOnly: true,
-  //     secure: true,
-  //     sameSite: 'strict',
-  //     path: '/auth/refresh',
-  //   });
-
-  //   return res.json({ message: 'Token refreshed' });
-  // }
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.TOKEN_REFRESHED,
+      tokens,
+    );
+  }
 
   @Post('google/sign-in')
   async googleSignIn(
     @Body() signInWithGoogleDto: SignInWithGoogleDto,
-    @Res() res: Response,
   ): Promise<ResponseStandard<SignInResponseDto | null>> {
     const result = await this.authService.googleSignIn(
       signInWithGoogleDto.idToken,
     );
-    const { hasError, message } = result;
-    if (hasError || !result.data) throw new BadRequestException(message);
-    const { accessToken, refreshToken } = result.data;
-    // set cookies
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
 
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/auth/refresh',
-    });
-
-    return result;
+    if (result instanceof ErrorResponse) {
+      return new ResponseStandard(
+        true,
+        result.errorCode,
+        ErrorMessage.GOOGLE_SIGN_IN_FAILED,
+        null,
+      );
+    }
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.GOOGLE_SIGN_IN_SUCCESS,
+      result,
+    );
   }
 }
