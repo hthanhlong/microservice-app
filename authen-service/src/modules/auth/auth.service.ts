@@ -9,16 +9,28 @@ import {
 } from '../../helper';
 import { ResponseStandard } from '../../classes';
 import { ErrorCode } from '../../enum';
-import * as jwt from 'jsonwebtoken';
 import { SignInDto, SignUpDto } from './dto/request';
 import { SignInResponseDto, SignUpResponseDto } from './dto/response';
 import { RedisService } from '../redis/redis.service';
 import axios from 'axios';
+import { JwtService } from '@nestjs/jwt';
+import * as fs from 'fs';
+import * as path from 'path';
 @Injectable()
 export class AuthService {
+  private privateKey = fs.readFileSync(
+    path.resolve(__dirname, 'private.key'),
+    'utf8',
+  );
+  private publicKey = fs.readFileSync(
+    path.resolve(__dirname, 'public.key'),
+    'utf8',
+  );
+
   constructor(
     private prismaService: PrismaService,
     private redisService: RedisService,
+    private jwtService: JwtService,
   ) {}
 
   async signUp(
@@ -113,19 +125,6 @@ export class AuthService {
     );
   }
 
-  verifyRefreshToken(refreshToken: string): {
-    userUuid: string;
-    email: string;
-    vendorUuid: string;
-  } {
-    const decoded = jwt.verify(refreshToken, 'refresh_secret') as {
-      userUuid: string;
-      email: string;
-      vendorUuid: string;
-    };
-    return decoded;
-  }
-
   async storeRefreshToken(refreshToken: string, userUuid: string) {
     // todo build log
     const hasRefreshToken = await this.redisService.get(userUuid);
@@ -152,27 +151,27 @@ export class AuthService {
 
     if (!user) throw new BadRequestException();
 
-    const accessToken = jwt.sign(
+    const accessToken = this.jwtService.sign(
       {
         uuid: userUuid,
         email: user.email,
         vendorUuid: user.vendorUuid,
       },
-      'access_secret', // TODO: change to env
       {
-        expiresIn: '15m', // TODO: change to env
+        privateKey: this.privateKey,
+        algorithm: 'RS256',
       },
     );
 
-    const refreshToken = jwt.sign(
+    const refreshToken = this.jwtService.sign(
       {
         uuid: userUuid,
         email: user.email,
         vendorUuid: user.vendorUuid,
       },
-      'refresh_secret', // TODO: change to env
       {
-        expiresIn: '7d', // TODO: change to env
+        privateKey: this.privateKey,
+        algorithm: 'RS256',
       },
     );
 

@@ -55,40 +55,40 @@ export class AuthController {
     return result;
   }
 
-  @Post('refresh')
-  async refreshTokens(@Req() req: Request, @Res() res: Response) {
-    const _refreshToken = req.cookies?.refresh_token;
+  // @Post('refresh')
+  // async refreshTokens(@Req() req: Request, @Res() res: Response) {
+  //   const _refreshToken = req.cookies?.refresh_token;
 
-    if (!_refreshToken) {
-      throw new UnauthorizedException('Refresh token is required');
-    }
+  //   if (!_refreshToken) {
+  //     throw new UnauthorizedException('Refresh token is required');
+  //   }
 
-    const { userUuid } = this.authService.verifyRefreshToken(
-      _refreshToken as string,
-    );
+  //   const { userUuid } = this.authService.verifyRefreshToken(
+  //     _refreshToken as string,
+  //   );
 
-    if (!userUuid) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+  //   if (!userUuid) {
+  //     throw new UnauthorizedException('Invalid refresh token');
+  //   }
 
-    const tokens = await this.authService.generateTokens(userUuid);
+  //   const tokens = await this.authService.generateTokens(userUuid);
 
-    await this.authService.storeRefreshToken(userUuid, tokens.refreshToken);
+  //   await this.authService.storeRefreshToken(userUuid, tokens.refreshToken);
 
-    res.cookie('access_token', tokens.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
-    res.cookie('refresh_token', tokens.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/auth/refresh',
-    });
+  //   res.cookie('access_token', tokens.accessToken, {
+  //     httpOnly: true,
+  //     secure: true,
+  //     sameSite: 'strict',
+  //   });
+  //   res.cookie('refresh_token', tokens.refreshToken, {
+  //     httpOnly: true,
+  //     secure: true,
+  //     sameSite: 'strict',
+  //     path: '/auth/refresh',
+  //   });
 
-    return res.json({ message: 'Token refreshed' });
-  }
+  //   return res.json({ message: 'Token refreshed' });
+  // }
 
   @Post('google/sign-in')
   async googleSignIn(
