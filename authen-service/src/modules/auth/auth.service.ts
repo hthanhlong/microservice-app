@@ -63,6 +63,9 @@ export class AuthService {
         },
       });
 
+      // using kafka to send verify code email
+      // later
+
       // map DTO
       const userDto = mapResponseToDto(user, SignUpResponseDto);
       return userDto;

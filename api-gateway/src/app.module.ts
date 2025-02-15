@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AxiosModule } from './modules/axios/axios.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { KafkaModule } from './modules/kafka/kafka.module';
+import { AxiosModule } from './modules/axios/axios.module';
 @Module({
   imports: [
     ClientsModule.register([
@@ -21,10 +20,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
+    KafkaModule,
     AxiosModule,
     AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
+  exports: [],
 })
 export class AppModule {}
