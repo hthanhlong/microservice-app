@@ -29,3 +29,8 @@ export class SignUpVendorResponseDto {
   @Expose()
   businessLicense: string;
 }
+
+export class VerifyCodeResponseDto {
+  @Expose()
+  message: string;
+}

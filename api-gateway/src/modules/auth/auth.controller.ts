@@ -13,6 +13,7 @@ import {
   SignInDto,
   SignInWithGoogleDto,
   SignUpVendorDto,
+  VerifyCodeDto,
 } from './dto/request';
 import { AxiosService } from '../axios/axios.service';
 import { ResponseStandard } from '../../classes';
@@ -20,6 +21,7 @@ import {
   SignUpResponseDto,
   SignInResponseDto,
   SignUpVendorResponseDto,
+  VerifyCodeResponseDto,
 } from './dto/response';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -35,6 +37,7 @@ export class AuthController {
     googleSignIn: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.googleSignIn}`,
     refreshTokens: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.refreshTokens}`,
     signUpVendor: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.signUpVendor}`,
+    verifyCode: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.verifyCode}`,
   };
 
   constructor(
@@ -108,6 +111,18 @@ export class AuthController {
     const result = await this.axiosService.post<
       ResponseStandard<SignUpVendorResponseDto>
     >(this.authRoutesMap.signUpVendor, signUpVendorDto);
+    return result;
+  }
+
+  @Post(ENDPOINTS.verifyCode)
+  async verifyCode(
+    @Body() verifyCodeDto: VerifyCodeDto,
+  ): Promise<ResponseStandard<VerifyCodeResponseDto>> {
+    const result = await this.axiosService.post<
+      ResponseStandard<VerifyCodeResponseDto>
+    >(this.authRoutesMap.verifyCode, verifyCodeDto);
+    const { hasError, message } = result;
+    if (hasError || !result.data) throw new BadRequestException(message);
     return result;
   }
 }

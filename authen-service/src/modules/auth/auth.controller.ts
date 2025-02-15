@@ -6,11 +6,13 @@ import {
   SignInWithGoogleDto,
   SignUpDto,
   SignUpVendorDto,
+  VerifyCodeDto,
 } from './dto/request';
 import {
   SignInResponseDto,
   SignUpResponseDto,
   SignUpVendorResponseDto,
+  VerifyCodeResponseDto,
 } from './dto/response';
 import { Request } from 'express';
 import { ErrorCode, ErrorMessage } from '../../enum';
@@ -155,6 +157,27 @@ export class AuthController {
       false,
       ErrorCode.NONE,
       ErrorMessage.SIGN_UP_VENDOR_SUCCESS,
+      result,
+    );
+  }
+
+  @Post(ENDPOINTS.verifyCode)
+  async verifyCode(
+    @Body() verifyCodeDto: VerifyCodeDto,
+  ): Promise<ResponseStandard<VerifyCodeResponseDto | null>> {
+    const result = await this.authService.verifyCode(verifyCodeDto);
+    if (result instanceof ErrorResponse) {
+      return new ResponseStandard(
+        true,
+        result.errorCode,
+        ErrorMessage.VERIFY_CODE_FAILED,
+        null,
+      );
+    }
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.VERIFY_CODE_SUCCESS,
       result,
     );
   }

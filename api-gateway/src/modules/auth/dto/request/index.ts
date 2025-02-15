@@ -68,3 +68,13 @@ export class SignUpVendorDto {
   @MaxLength(1000)
   businessLicense: string;
 }
+
+export class VerifyCodeDto {
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+}

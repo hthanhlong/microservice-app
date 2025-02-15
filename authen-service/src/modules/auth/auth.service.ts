@@ -7,9 +7,14 @@ import {
   hashedPasswordFunc,
   mapResponseToDto,
 } from '../../helper';
-import { ErrorResponse } from '../../classes';
-import { ErrorCode } from '../../enum';
-import { SignUpVendorDto, SignInDto, SignUpDto } from './dto/request';
+import { ErrorResponse, ResponseStandard } from '../../classes';
+import { ErrorCode, ErrorMessage } from '../../enum';
+import {
+  SignUpVendorDto,
+  SignInDto,
+  SignUpDto,
+  VerifyCodeDto,
+} from './dto/request';
 import {
   SignInResponseDto,
   SignUpResponseDto,
@@ -20,15 +25,16 @@ import axios from 'axios';
 import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import * as path from 'path';
+import { KafkaService } from '../kafka/kafka.service';
 @Injectable()
 export class AuthService {
   private privateKey: string;
-  private publicKey: string;
 
   constructor(
     private prismaService: PrismaService,
     private redisService: RedisService,
     private jwtService: JwtService,
+    private kafkaService: KafkaService,
   ) {
     this.privateKey = fs.readFileSync(
       path.resolve(__dirname, '../../keys/private.key'),
@@ -64,7 +70,10 @@ export class AuthService {
       });
 
       // using kafka to send verify code email
-      // later
+      this.kafkaService.sendMessage('verify-code', {
+        email: email,
+        verifyCode: verifyCode,
+      });
 
       // map DTO
       const userDto = mapResponseToDto(user, SignUpResponseDto);
@@ -264,5 +273,38 @@ export class AuthService {
     });
 
     return mapResponseToDto(vendor, SignUpVendorResponseDto);
+  }
+
+  async verifyCode(verifyCodeDto: VerifyCodeDto) {
+    const { email, code } = verifyCodeDto;
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!user) {
+      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+    }
+
+    if (user.verifyCode !== code) {
+      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+    }
+
+    await this.prismaService.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        isVerified: true,
+      },
+    });
+
+    return new ResponseStandard(
+      false,
+      ErrorCode.NONE,
+      ErrorMessage.VERIFY_CODE_SUCCESS,
+      null,
+    );
   }
 }

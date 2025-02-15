@@ -31,4 +31,6 @@ export enum ErrorMessage {
   LOGOUT_SUCCESS = 'Logout successfully',
   SIGN_UP_VENDOR_FAILED = 'Sign up vendor failed',
   SIGN_UP_VENDOR_SUCCESS = 'Sign up vendor successfully',
+  VERIFY_CODE_FAILED = 'Verify code failed',
+  VERIFY_CODE_SUCCESS = 'Verify code successfully',
 }

@@ -1,8 +1,7 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { KafkaService } from './kafka.service';
 import { KafkaController } from './kafka.controller';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-@Global()
 @Module({
   imports: [
     ClientsModule.register([
@@ -11,11 +10,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'my-app',
+            clientId: 'email-service',
             brokers: ['localhost:9092'],
-          },
-          consumer: {
-            groupId: 'my-consumer-group',
           },
         },
       },

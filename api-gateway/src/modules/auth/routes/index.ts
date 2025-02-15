@@ -6,4 +6,5 @@ export const ENDPOINTS = {
   googleSignIn: 'google/sign-in',
   refreshTokens: 'refresh-tokens',
   signUpVendor: 'vendor/sign-up',
+  verifyCode: 'verify-code',
 };
