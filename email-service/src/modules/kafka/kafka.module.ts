@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { KafkaService } from './kafka.service';
 import { KafkaController } from './kafka.controller';
+import { MailerModule } from '../mailer/mailer.module';
 @Module({
   imports: [
     ClientsModule.register([
@@ -16,6 +17,7 @@ import { KafkaController } from './kafka.controller';
         },
       },
     ]),
+    MailerModule,
   ],
   controllers: [KafkaController],
   providers: [KafkaService],

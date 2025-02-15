@@ -66,6 +66,8 @@ export class AuthService {
           verifyCode: verifyCode,
           salt: salt,
           subsType: 'BASIC',
+          isVerified: false,
+          isDeleted: false,
         },
       });
 

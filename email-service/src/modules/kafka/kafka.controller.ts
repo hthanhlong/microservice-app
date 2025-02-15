@@ -1,14 +1,13 @@
 import { Controller } from '@nestjs/common';
-import { KafkaService } from './kafka.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-
+import { IVerifyCode } from './interfaces';
+import { MailerService } from '../mailer/mailer.service';
 @Controller('kafka')
 export class KafkaController {
-  constructor(private readonly kafkaService: KafkaService) {}
+  constructor(private readonly mailerService: MailerService) {}
 
   @MessagePattern('verify-code')
-  verifyCode(@Payload() data: any) {
-    console.log(data);
-    // send email to customer
+  async verifyCode(@Payload() data: IVerifyCode) {
+    await this.mailerService.sendEmail(data.email, 'Verify Code', data.code);
   }
 }
