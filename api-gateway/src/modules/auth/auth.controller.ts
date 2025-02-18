@@ -15,8 +15,7 @@ import {
   SignUpVendorDto,
   VerifyCodeDto,
 } from './dto/request';
-import { AxiosService } from '../axios/axios.service';
-import { ResponseStandard } from '../../classes';
+import { IRes } from '../../classes';
 import {
   SignUpResponseDto,
   SignInResponseDto,
@@ -25,104 +24,74 @@ import {
 } from './dto/response';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { ENDPOINTS, AUTH_PREFIX } from './routes';
+import { ENDPOINTS } from './routes';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-@Controller(AUTH_PREFIX)
+@Controller('auth')
 export class AuthController {
-  private readonly authServiceUrl = process.env.AUTHENTICATION_SERVICE_URL;
+  constructor(private readonly authService: AuthService) {}
 
-  private authRoutesMap = {
-    signUp: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.signUp}`,
-    signIn: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.signIn}`,
-    googleSignIn: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.googleSignIn}`,
-    refreshTokens: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.refreshTokens}`,
-    signUpVendor: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.signUpVendor}`,
-    verifyCode: `${this.authServiceUrl}/${AUTH_PREFIX}/${ENDPOINTS.verifyCode}`,
-  };
-
-  constructor(
-    private readonly axiosService: AxiosService,
-    private readonly authService: AuthService,
-  ) {}
-
-  @Post(ENDPOINTS.signUp)
-  async signUp(
-    @Body() signUpDto: SignUpDto,
-  ): Promise<ResponseStandard<SignUpResponseDto>> {
-    const result = await this.axiosService.post<
-      ResponseStandard<SignUpResponseDto>
-    >(this.authRoutesMap.signUp, signUpDto);
-    const { hasError, message } = result;
-    if (hasError || !result.data) throw new BadRequestException(message);
+  @Post(ENDPOINTS.v1.signUp)
+  async signUp(@Body() signUpDto: SignUpDto): Promise<IRes<SignUpResponseDto>> {
+    const result = await this.authService.signUp(signUpDto);
+    if (result.hasError || !result.data)
+      throw new BadRequestException(result.message);
     return result;
   }
 
-  @Get(ENDPOINTS.signIn)
+  @Get(ENDPOINTS.v1.signIn)
   async signIn(
     @Body() signInDto: SignInDto,
     @Res() res: Response,
-  ): Promise<ResponseStandard<SignInResponseDto | null>> {
-    const result = await this.axiosService.post<
-      ResponseStandard<SignInResponseDto>
-    >(this.authRoutesMap.signIn, signInDto);
-    const { hasError, message } = result;
-    if (hasError || !result.data) throw new BadRequestException(message);
+  ): Promise<IRes<SignInResponseDto | null>> {
+    const result = await this.authService.signIn(signInDto);
+    if (result.hasError || !result.data)
+      throw new BadRequestException(result.message);
     this.authService.setCookies(res, result.data);
     return result;
   }
 
-  @Post(ENDPOINTS.googleSignIn)
+  @Post(ENDPOINTS.v1.googleSignIn)
   async googleSignIn(
     @Body() signInWithGoogleDto: SignInWithGoogleDto,
     @Res() res: Response,
-  ): Promise<ResponseStandard<SignInResponseDto | null>> {
-    const result = await this.axiosService.post<
-      ResponseStandard<SignInResponseDto>
-    >(this.authRoutesMap.googleSignIn, signInWithGoogleDto);
-    const { hasError, message } = result;
-    if (hasError || !result.data) throw new BadRequestException(message);
+  ): Promise<IRes<SignInResponseDto | null>> {
+    const result = await this.authService.googleSignIn(signInWithGoogleDto);
+    if (result.hasError || !result.data)
+      throw new BadRequestException(result.message);
     this.authService.setCookies(res, result.data);
     return result;
   }
 
-  @Post(ENDPOINTS.refreshTokens)
+  @Post(ENDPOINTS.v1.refreshTokens)
   async refreshTokens(
     @Req() req: Request,
     @Res() res: Response,
-  ): Promise<ResponseStandard<SignInResponseDto | null>> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  ): Promise<IRes<SignInResponseDto | null>> {
     const refreshToken = req.cookies?.refresh_token as string;
     if (!refreshToken)
       throw new BadRequestException('Refresh token is required');
-    const result = await this.axiosService.post<
-      ResponseStandard<SignInResponseDto>
-    >(this.authRoutesMap.refreshTokens, { refreshToken });
-    const { hasError, message } = result;
-    if (hasError || !result.data) throw new BadRequestException(message);
+    const result = await this.authService.refreshTokens(refreshToken);
+    if (result.hasError || !result.data)
+      throw new BadRequestException(result.message);
     this.authService.setCookies(res, result.data);
     return result;
   }
 
-  @Post(ENDPOINTS.signUpVendor)
+  @Post(ENDPOINTS.v1.signUpVendor)
   @UseGuards(JwtAuthGuard)
   async signUpVendor(
     @Body() signUpVendorDto: SignUpVendorDto,
-  ): Promise<ResponseStandard<SignUpVendorResponseDto>> {
-    const result = await this.axiosService.post<
-      ResponseStandard<SignUpVendorResponseDto>
-    >(this.authRoutesMap.signUpVendor, signUpVendorDto);
+  ): Promise<IRes<SignUpVendorResponseDto>> {
+    const result = await this.authService.signUpVendor(signUpVendorDto);
     return result;
   }
 
-  @Post(ENDPOINTS.verifyCode)
+  @Post(ENDPOINTS.v1.verifyCode)
+  @UseGuards(JwtAuthGuard)
   async verifyCode(
     @Body() verifyCodeDto: VerifyCodeDto,
-  ): Promise<ResponseStandard<VerifyCodeResponseDto>> {
-    const result = await this.axiosService.post<
-      ResponseStandard<VerifyCodeResponseDto>
-    >(this.authRoutesMap.verifyCode, verifyCodeDto);
-    const { hasError, message } = result;
-    if (hasError || !result.data) throw new BadRequestException(message);
+  ): Promise<IRes<VerifyCodeResponseDto>> {
+    const result = await this.authService.verifyCode(verifyCodeDto);
     return result;
   }
 }

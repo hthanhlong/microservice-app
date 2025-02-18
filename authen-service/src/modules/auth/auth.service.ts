@@ -7,7 +7,7 @@ import {
   hashedPasswordFunc,
   mapResponseToDto,
 } from '../../helper';
-import { ErrorResponse, ResponseStandard } from '../../classes';
+import { ErrorResponse, IRes } from '../../classes';
 import { ErrorCode, ErrorMessage } from '../../enum';
 import {
   SignUpVendorDto,
@@ -302,7 +302,7 @@ export class AuthService {
       },
     });
 
-    return new ResponseStandard(
+    return new IRes(
       false,
       ErrorCode.NONE,
       ErrorMessage.VERIFY_CODE_SUCCESS,

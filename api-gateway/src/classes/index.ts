@@ -1,4 +1,4 @@
-export class ResponseStandard<T> {
+export class IRes<T> {
   hasError: boolean;
   errorCode: number;
   message: string;
