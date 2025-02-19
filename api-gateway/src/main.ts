@@ -1,17 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
 import { MicroserviceOptions } from '@nestjs/microservices';
 import { Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 
-const NEXT_APP = 'http://localhost:3000'; // TODO: change to production url and add to env
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.setGlobalPrefix('api');
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+  });
+
   const configService = app.get(ConfigService);
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
@@ -25,10 +31,12 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
+
   app.enableCors({
     credentials: true,
     origin: configService.get<string>('frontend.nextApp'),
   });
+
   app.useGlobalPipes(new ValidationPipe());
 
   await app.startAllMicroservices();

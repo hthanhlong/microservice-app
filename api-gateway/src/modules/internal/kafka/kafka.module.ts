@@ -1,8 +1,7 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { KafkaService } from './kafka.service';
 import { KafkaController } from './kafka.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-@Global()
 @Module({
   imports: [
     ClientsModule.register([

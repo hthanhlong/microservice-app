@@ -15,7 +15,7 @@ import {
   SignUpVendorDto,
   VerifyCodeDto,
 } from './dto/request';
-import { IRes } from '../../classes';
+import { IRes } from '../../../classes';
 import {
   SignUpResponseDto,
   SignInResponseDto,
@@ -24,13 +24,25 @@ import {
 } from './dto/response';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { ENDPOINTS } from './routes';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-@Controller('auth')
+
+const AUTH_ROUTES = {
+  signUp: 'sign-up',
+  signIn: 'sign-in',
+  googleSignIn: 'google/sign-in',
+  refreshTokens: 'refresh-tokens',
+  signUpVendor: 'vendor/sign-up',
+  verifyCode: 'verify-code',
+};
+
+@Controller({
+  version: '1',
+  path: 'auth',
+})
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post(ENDPOINTS.v1.signUp)
+  @Post(AUTH_ROUTES.signUp)
   async signUp(@Body() signUpDto: SignUpDto): Promise<IRes<SignUpResponseDto>> {
     const result = await this.authService.signUp(signUpDto);
     if (result.hasError || !result.data)
@@ -38,7 +50,7 @@ export class AuthController {
     return result;
   }
 
-  @Get(ENDPOINTS.v1.signIn)
+  @Post(AUTH_ROUTES.signIn)
   async signIn(
     @Body() signInDto: SignInDto,
     @Res() res: Response,
@@ -50,7 +62,7 @@ export class AuthController {
     return result;
   }
 
-  @Post(ENDPOINTS.v1.googleSignIn)
+  @Post(AUTH_ROUTES.googleSignIn)
   async googleSignIn(
     @Body() signInWithGoogleDto: SignInWithGoogleDto,
     @Res() res: Response,
@@ -62,7 +74,7 @@ export class AuthController {
     return result;
   }
 
-  @Post(ENDPOINTS.v1.refreshTokens)
+  @Post(AUTH_ROUTES.refreshTokens)
   async refreshTokens(
     @Req() req: Request,
     @Res() res: Response,
@@ -77,7 +89,7 @@ export class AuthController {
     return result;
   }
 
-  @Post(ENDPOINTS.v1.signUpVendor)
+  @Post(AUTH_ROUTES.signUpVendor)
   @UseGuards(JwtAuthGuard)
   async signUpVendor(
     @Body() signUpVendorDto: SignUpVendorDto,
@@ -86,7 +98,7 @@ export class AuthController {
     return result;
   }
 
-  @Post(ENDPOINTS.v1.verifyCode)
+  @Post(AUTH_ROUTES.verifyCode)
   @UseGuards(JwtAuthGuard)
   async verifyCode(
     @Body() verifyCodeDto: VerifyCodeDto,
