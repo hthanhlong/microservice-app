@@ -1,4 +1,4 @@
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../internal/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
   checkPassword,
@@ -20,12 +20,12 @@ import {
   SignUpResponseDto,
   SignUpVendorResponseDto,
 } from './dto/response';
-import { RedisService } from '../redis/redis.service';
+import { RedisService } from '../internal/redis/redis.service';
 import axios from 'axios';
 import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import * as path from 'path';
-import { KafkaService } from '../kafka/kafka.service';
+import { KafkaService } from '../internal/kafka/kafka.service';
 @Injectable()
 export class AuthService {
   private privateKey: string;

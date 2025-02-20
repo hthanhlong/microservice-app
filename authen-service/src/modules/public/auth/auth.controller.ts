@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ErrorResponse, IRes } from '../../classes';
+import { ErrorResponse, IRes } from '../../../classes';
 import {
   SignInDto,
   SignInWithGoogleDto,
@@ -15,7 +15,7 @@ import {
   VerifyCodeResponseDto,
 } from './dto/response';
 import { Request } from 'express';
-import { ErrorCode, ErrorMessage } from '../../enum';
+import { ErrorCode, ErrorMessage } from '../../../enum';
 import { AUTH_PREFIX, ENDPOINTS } from './routes';
 @Controller(AUTH_PREFIX)
 export class AuthController {
