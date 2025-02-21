@@ -16,8 +16,12 @@ import {
 } from './dto/response';
 import { Request } from 'express';
 import { ErrorCode, ErrorMessage } from '../../../enum';
-import { AUTH_PREFIX, ENDPOINTS } from './routes';
-@Controller(AUTH_PREFIX)
+import { ENDPOINTS } from './routes';
+
+@Controller({
+  path: 'auth',
+  version: '1',
+})
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

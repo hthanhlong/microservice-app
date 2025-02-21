@@ -1,5 +1,3 @@
-export const AUTH_PREFIX = 'auth';
-
 export const ENDPOINTS = {
   signUp: 'sign-up',
   signIn: ' sign-in',
