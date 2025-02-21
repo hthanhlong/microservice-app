@@ -7,8 +7,8 @@ import {
   hashedPasswordFunc,
   mapResponseToDto,
 } from '../../../helper';
-import { ErrorResponse, IRes } from '../../../classes';
-import { ErrorCode, ErrorMessage } from '../../../enum';
+import { IErrorRes, IRes } from '../../../common/classes';
+import { ErrorCode, ErrorMessage } from '../../../common/enum';
 import {
   SignUpVendorDto,
   SignInDto,
@@ -42,9 +42,7 @@ export class AuthService {
     );
   }
 
-  async signUp(
-    signUpDto: SignUpDto,
-  ): Promise<SignUpResponseDto | ErrorResponse> {
+  async signUp(signUpDto: SignUpDto): Promise<SignUpResponseDto | IErrorRes> {
     const { name, email, password } = signUpDto;
 
     const user = await this.prismaService.user.findUnique({
@@ -82,12 +80,10 @@ export class AuthService {
       return userDto;
     }
     // existed email
-    return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+    return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
   }
 
-  async signIn(
-    signInDto: SignInDto,
-  ): Promise<SignInResponseDto | ErrorResponse> {
+  async signIn(signInDto: SignInDto): Promise<SignInResponseDto | IErrorRes> {
     const { email, password } = signInDto;
     // init
     const user = await this.prismaService.user.findUnique({
@@ -97,7 +93,7 @@ export class AuthService {
     });
     // check email
     if (!user) {
-      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+      return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
     // check password
     const isCorrectPassword = await checkPassword(
@@ -107,11 +103,11 @@ export class AuthService {
     );
 
     if (!isCorrectPassword) {
-      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+      return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
 
     const tokens = await this._generateTokens(user.uuid);
-    if (tokens instanceof ErrorResponse) {
+    if (tokens instanceof IErrorRes) {
       return tokens;
     }
     await this._storeRefreshToken(tokens.refreshToken, user.uuid);
@@ -122,7 +118,7 @@ export class AuthService {
   async _verifyRefreshToken(refreshToken: string) {
     const userUuid = await this.redisService.get(refreshToken);
     if (!userUuid) {
-      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+      return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
     return userUuid;
   }
@@ -130,10 +126,10 @@ export class AuthService {
   async refreshTokens(refreshToken: string) {
     const userUuid = await this._verifyRefreshToken(refreshToken);
     if (!userUuid) {
-      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+      return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
     const tokens = await this._generateTokens(userUuid as string);
-    if (tokens instanceof ErrorResponse) {
+    if (tokens instanceof IErrorRes) {
       return tokens;
     }
     await this._storeRefreshToken(tokens.refreshToken, userUuid as string);
@@ -159,7 +155,7 @@ export class AuthService {
         accessToken: string;
         refreshToken: string;
       }
-    | ErrorResponse
+    | IErrorRes
   > {
     const user = await this.prismaService.user.findUnique({
       where: {
@@ -167,7 +163,7 @@ export class AuthService {
       },
     });
 
-    if (!user) return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+    if (!user) return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
 
     const accessToken = this.jwtService.sign(
       {
@@ -208,9 +204,7 @@ export class AuthService {
     };
   }
 
-  async googleSignIn(
-    idToken: string,
-  ): Promise<SignInResponseDto | ErrorResponse> {
+  async googleSignIn(idToken: string): Promise<SignInResponseDto | IErrorRes> {
     const { email, name } = await this._verifyGoogleIdToken(idToken);
 
     let user = await this.prismaService.user.findUnique({
@@ -239,7 +233,7 @@ export class AuthService {
     }
 
     const tokens = await this._generateTokens(user.uuid);
-    if (tokens instanceof ErrorResponse) {
+    if (tokens instanceof IErrorRes) {
       return tokens;
     }
     await this._storeRefreshToken(tokens.refreshToken, user.uuid);
@@ -262,7 +256,7 @@ export class AuthService {
     });
 
     if (!user) {
-      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+      return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
 
     const vendor = await this.prismaService.vendor.create({
@@ -286,11 +280,11 @@ export class AuthService {
     });
 
     if (!user) {
-      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+      return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
 
     if (user.verifyCode !== code) {
-      return new ErrorResponse(ErrorCode.EMAIL_PASSWORD_EXISTED);
+      return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
     }
 
     await this.prismaService.user.update({

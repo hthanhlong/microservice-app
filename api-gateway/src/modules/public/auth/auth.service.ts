@@ -14,7 +14,7 @@ import {
   VerifyCodeResponseDto,
   SignUpVendorResponseDto,
 } from './dto/response';
-import { IRes } from '../../../classes';
+import { IRes } from '../../../common/classes';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

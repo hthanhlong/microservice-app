@@ -15,7 +15,7 @@ import {
   SignUpVendorDto,
   VerifyCodeDto,
 } from './dto/request';
-import { IRes } from '../../../classes';
+import { IRes } from '../../../common/classes';
 import {
   SignUpResponseDto,
   SignInResponseDto,

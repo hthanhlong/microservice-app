@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ErrorResponse, IRes } from '../../../classes';
+import { IErrorRes, IRes } from '../../../common/classes';
 import {
   SignInDto,
   SignInWithGoogleDto,
@@ -15,7 +15,7 @@ import {
   VerifyCodeResponseDto,
 } from './dto/response';
 import { Request } from 'express';
-import { ErrorCode, ErrorMessage } from '../../../enum';
+import { ErrorCode, ErrorMessage } from '../../../common/enum';
 import { ENDPOINTS } from './routes';
 
 @Controller({
@@ -30,7 +30,7 @@ export class AuthController {
     @Body() signUpDto: SignUpDto,
   ): Promise<IRes<SignUpResponseDto | null>> {
     const result = await this.authService.signUp(signUpDto);
-    if (result instanceof ErrorResponse) {
+    if (result instanceof IErrorRes) {
       return new IRes(
         true,
         result.errorCode,
@@ -51,7 +51,7 @@ export class AuthController {
     @Body() signInDto: SignInDto,
   ): Promise<IRes<SignInResponseDto | null>> {
     const result = await this.authService.signIn(signInDto);
-    if (result instanceof ErrorResponse) {
+    if (result instanceof IErrorRes) {
       return new IRes(
         true,
         result.errorCode,
@@ -83,7 +83,7 @@ export class AuthController {
     }
     const tokens = await this.authService.refreshTokens(refreshToken);
 
-    if (tokens instanceof ErrorResponse) {
+    if (tokens instanceof IErrorRes) {
       return new IRes(
         true,
         tokens.errorCode,
@@ -108,7 +108,7 @@ export class AuthController {
       signInWithGoogleDto.idToken,
     );
 
-    if (result instanceof ErrorResponse) {
+    if (result instanceof IErrorRes) {
       return new IRes(
         true,
         result.errorCode,
@@ -144,7 +144,7 @@ export class AuthController {
     @Body() signUpVendorDto: SignUpVendorDto,
   ): Promise<IRes<SignUpVendorResponseDto | null>> {
     const result = await this.authService.signUpVendor(signUpVendorDto);
-    if (result instanceof ErrorResponse) {
+    if (result instanceof IErrorRes) {
       return new IRes(
         true,
         result.errorCode,
@@ -165,7 +165,7 @@ export class AuthController {
     @Body() verifyCodeDto: VerifyCodeDto,
   ): Promise<IRes<VerifyCodeResponseDto | null>> {
     const result = await this.authService.verifyCode(verifyCodeDto);
-    if (result instanceof ErrorResponse) {
+    if (result instanceof IErrorRes) {
       return new IRes(
         true,
         result.errorCode,

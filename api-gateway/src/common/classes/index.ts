@@ -13,7 +13,7 @@ export class IRes<T> {
   }
 }
 
-export class ErrorResponse {
+export class IErrorRes {
   hasError: boolean;
   statusCode: number;
   errorCode: number;
