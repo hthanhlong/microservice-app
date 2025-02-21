@@ -1,5 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { AxiosService } from './axios.service';
 
@@ -8,6 +8,7 @@ export class AxiosModule {
   static register(serviceName: string): DynamicModule {
     return {
       module: AxiosModule,
+      imports: [ConfigModule],
       providers: [
         {
           provide: 'AXIOS_INSTANCE',

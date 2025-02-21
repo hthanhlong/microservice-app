@@ -1,4 +1,4 @@
-import { PrismaService } from '../internal/prisma/prisma.service';
+import { PrismaService } from '../../internal/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
   checkPassword,
@@ -6,9 +6,9 @@ import {
   getVerifyCode,
   hashedPasswordFunc,
   mapResponseToDto,
-} from '../../helper';
-import { ErrorResponse, IRes } from '../../classes';
-import { ErrorCode, ErrorMessage } from '../../enum';
+} from '../../../helper';
+import { ErrorResponse, IRes } from '../../../classes';
+import { ErrorCode, ErrorMessage } from '../../../enum';
 import {
   SignUpVendorDto,
   SignInDto,
@@ -20,12 +20,12 @@ import {
   SignUpResponseDto,
   SignUpVendorResponseDto,
 } from './dto/response';
-import { RedisService } from '../internal/redis/redis.service';
+import { RedisService } from '../../internal/redis/redis.service';
 import axios from 'axios';
 import { JwtService } from '@nestjs/jwt';
 import * as fs from 'fs';
 import * as path from 'path';
-import { KafkaService } from '../internal/kafka/kafka.service';
+import { KafkaService } from '../../internal/kafka/kafka.service';
 @Injectable()
 export class AuthService {
   private privateKey: string;
@@ -37,7 +37,7 @@ export class AuthService {
     private kafkaService: KafkaService,
   ) {
     this.privateKey = fs.readFileSync(
-      path.resolve(__dirname, '../../keys/private.key'),
+      path.resolve(__dirname, '../../../keys/private.key'),
       'utf8',
     );
   }

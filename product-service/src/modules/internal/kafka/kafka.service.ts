@@ -9,7 +9,6 @@ export class KafkaService implements OnModuleInit {
 
   async onModuleInit() {
     await this.kafkaClient.connect();
-    console.log('Kafka connected');
   }
 
   sendMessage(topic: string, message: any) {
