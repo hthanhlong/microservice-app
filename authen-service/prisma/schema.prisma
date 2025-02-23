@@ -27,6 +27,7 @@ model User {
   address        String?   @db.VarChar(1000) // from user
   isDeleted      Boolean   @default(false)
   subsType       String
+  role           String    @default("user")
   expiresAtSub   DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

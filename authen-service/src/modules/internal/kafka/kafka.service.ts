@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-
+import { TOPICS } from './topic';
 @Injectable()
 export class KafkaService implements OnModuleInit {
   constructor(
@@ -12,7 +12,10 @@ export class KafkaService implements OnModuleInit {
     console.log('Kafka connected');
   }
 
-  sendMessage(topic: string, message: any) {
-    this.kafkaClient.emit(topic, message);
+  sendVerifyCode(email: string, verifyCode: string) {
+    this.kafkaClient.emit(TOPICS.VERIFY_CODE, {
+      email,
+      verifyCode,
+    });
   }
 }

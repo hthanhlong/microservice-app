@@ -1,12 +1,20 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Inject,
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import Redis from 'ioredis';
 
 @Injectable()
-export class RedisService implements OnModuleDestroy {
-  private client!: Redis;
+export class RedisService implements OnModuleInit, OnModuleDestroy {
+  constructor(@Inject('REDIS_SERVICE') private readonly client: Redis) {}
 
-  constructor(private readonly configService: ConfigService) {}
+  onModuleInit() {
+    this.client.on('ready', () => {
+      console.log('Redis connected');
+    });
+  }
 
   async set(key: string, value: string, ttl?: number) {
     if (ttl) {
