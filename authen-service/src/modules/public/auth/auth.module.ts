@@ -5,12 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { KafkaModule } from '../../internal/kafka/kafka.module';
 import { KeyService } from '../../internal/key/keys.service';
 @Module({
-  imports: [
-    KafkaModule,
-    JwtModule.register({
-      secret: 'refresh_secret',
-    }),
-  ],
+  imports: [KafkaModule, JwtModule],
   controllers: [AuthController],
   providers: [AuthService, KeyService],
 })

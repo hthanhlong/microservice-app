@@ -1,6 +1,6 @@
 export const ENDPOINTS = {
   signUp: 'sign-up',
-  signIn: ' sign-in',
+  signIn: 'sign-in',
   googleSignIn: 'google/sign-in',
   refreshTokens: 'refresh-tokens',
   logout: 'logout',

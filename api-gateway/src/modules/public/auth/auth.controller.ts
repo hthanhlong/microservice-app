@@ -53,7 +53,7 @@ export class AuthController {
   @Post(AUTH_ROUTES.signIn)
   async signIn(
     @Body() signInDto: SignInDto,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<IRes<SignInResponseDto | null>> {
     const result = await this.authService.signIn(signInDto);
     if (result.hasError || !result.data)

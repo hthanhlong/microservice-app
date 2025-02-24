@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Req } from '@nestjs/common';
+import { Controller, Post, Body, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { IErrorRes, IRes } from '../../../common/classes';
 import {
@@ -46,7 +46,7 @@ export class AuthController {
     );
   }
 
-  @Get(ENDPOINTS.signIn)
+  @Post(ENDPOINTS.signIn)
   async signIn(
     @Body() signInDto: SignInDto,
   ): Promise<IRes<SignInResponseDto | null>> {

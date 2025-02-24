@@ -3,7 +3,7 @@ import { KafkaModule } from '../../internal/kafka/kafka.module';
 import { EmailService } from './email.service';
 import { EmailController } from './email.controller';
 @Module({
-  imports: [KafkaModule.register('email-service-group')],
+  imports: [KafkaModule],
   controllers: [EmailController],
   providers: [EmailService],
 })

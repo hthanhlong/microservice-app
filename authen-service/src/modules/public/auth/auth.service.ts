@@ -61,7 +61,10 @@ export class AuthService {
       });
 
       // using kafka to send verify code email
-      this.kafkaService.sendVerifyCode(email, verifyCode);
+      this.kafkaService.sendVerifyCode({
+        email,
+        verifyCode,
+      });
 
       // map DTO
       const userDto = mapResponseToDto(user, SignUpResponseDto);
