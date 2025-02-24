@@ -2,6 +2,8 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { AxiosService } from './axios.service';
+import { Logger } from '@nestjs/common';
+const logger = new Logger('AxiosModule');
 
 @Module({})
 export class AxiosModule {
@@ -11,19 +13,14 @@ export class AxiosModule {
       imports: [ConfigModule],
       providers: [
         {
-          provide: 'AXIOS_INSTANCE',
+          provide: 'AXIOS_BASE_URL',
           useFactory: (configService: ConfigService) =>
-            axios.create({
-              baseURL: configService.get<string>(`services.${serviceName}.url`),
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }),
+            configService.get<string>(`services.${serviceName}.url`),
           inject: [ConfigService],
         },
         AxiosService,
       ],
-      exports: ['AXIOS_INSTANCE', AxiosService],
+      exports: [AxiosService],
     };
   }
 }

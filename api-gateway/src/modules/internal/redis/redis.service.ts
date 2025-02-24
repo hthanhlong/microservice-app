@@ -43,17 +43,17 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async set(key: string, value: string, ttl?: number) {
     if (ttl) {
-      return this.client.set(key, value, 'EX', ttl);
+      return await this.client.set(key, value, 'EX', ttl);
     }
-    return this.client.set(key, value);
+    return await this.client.set(key, value);
   }
 
   async get(key: string) {
-    return this.client.get(key);
+    return await this.client.get(key);
   }
 
   async del(key: string) {
-    return this.client.del(key);
+    return await this.client.del(key);
   }
 
   async onModuleDestroy() {

@@ -6,9 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
-import * as fs from 'fs';
-import * as path from 'path';
-
+import { RedisService } from '../modules/internal/redis/redis.service';
 interface JwtPayload {
   uuid: string;
   email: string;
@@ -18,11 +16,10 @@ interface JwtPayload {
 export class JwtAuthGuard implements CanActivate {
   private publicKey: string;
 
-  constructor() {
-    this.publicKey = fs.readFileSync(
-      path.join(__dirname, '../keys/public.pem'),
-      'utf8',
-    );
+  constructor(private readonly redisService: RedisService) {
+    this.publicKey = this.redisService.getPublicKey(
+      'auth:publicKey',
+    ) as unknown as string;
   }
 
   canActivate(context: ExecutionContext): boolean {

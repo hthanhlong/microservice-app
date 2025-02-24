@@ -3,12 +3,15 @@ import { promises as fs } from 'fs';
 import { generateKeyPairSync } from 'crypto';
 import * as path from 'path';
 import { Logger } from '@nestjs/common';
+import { RedisService } from '../redis/redis.service';
 const logger = new Logger('KeyService');
 
 @Injectable()
 export class KeyService implements OnModuleInit {
   private privateKeyPath = path.join(__dirname, '../../../keys/private.pem');
   private publicKeyPath = path.join(__dirname, '../../../keys/public.pem');
+
+  constructor(private readonly redisService: RedisService) {}
 
   async onModuleInit() {
     await this.ensureKeysExist();
@@ -26,9 +29,8 @@ export class KeyService implements OnModuleInit {
         publicKeyEncoding: { type: 'spki', format: 'pem' },
         privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
       });
-
       await fs.writeFile(this.privateKeyPath, privateKey);
-      await fs.writeFile(this.publicKeyPath, publicKey);
+      await this.redisService.setPublicKey('auth:publicKey', publicKey);
       logger.log('RSA key pair generated. ✅');
     }
   }
