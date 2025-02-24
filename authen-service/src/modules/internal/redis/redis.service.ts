@@ -1,19 +1,35 @@
 import {
-  Inject,
   Injectable,
   OnModuleDestroy,
   OnModuleInit,
+  Logger,
 } from '@nestjs/common';
 import Redis from 'ioredis';
+import chalk from 'chalk';
+import { ConfigService } from '@nestjs/config';
 
+const logger = new Logger('RedisService');
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
-  constructor(@Inject('REDIS_SERVICE') private readonly client: Redis) {}
+  private client: Redis;
+
+  constructor(private readonly configService: ConfigService) {
+    this.client = new Redis({
+      host: this.configService.get<string>('REDIS_HOST'),
+      port: this.configService.get<number>('REDIS_PORT'),
+    });
+
+    this.client.on('connect', () => {
+      logger.log(chalk.green('Redis connected ✅'));
+    });
+
+    this.client.on('error', (err) => {
+      logger.error(chalk.red('Redis error ❌', err));
+    });
+  }
 
   onModuleInit() {
-    this.client.on('ready', () => {
-      console.log('Redis connected');
-    });
+    logger.log(chalk.green('RedisService initialized ✅'));
   }
 
   async set(key: string, value: string, ttl?: number) {

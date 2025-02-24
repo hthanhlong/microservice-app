@@ -23,24 +23,17 @@ import {
 import { RedisService } from '../../internal/redis/redis.service';
 import axios from 'axios';
 import { JwtService } from '@nestjs/jwt';
-import * as fs from 'fs';
-import * as path from 'path';
 import { KafkaService } from '../../internal/kafka/kafka.service';
+import { KeyService } from '../../internal/key/keys.service';
 @Injectable()
 export class AuthService {
-  private privateKey: string;
-
   constructor(
     private prismaService: PrismaService,
     private redisService: RedisService,
     private jwtService: JwtService,
     private kafkaService: KafkaService,
-  ) {
-    this.privateKey = fs.readFileSync(
-      path.resolve(__dirname, '../../../keys/private.key'),
-      'utf8',
-    );
-  }
+    private keyService: KeyService,
+  ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<SignUpResponseDto | IErrorRes> {
     const { name, email, password } = signUpDto;
@@ -160,24 +153,24 @@ export class AuthService {
 
     if (!user) return new IErrorRes(ErrorCode.EMAIL_PASSWORD_EXISTED);
 
-    const accessToken = this.jwtService.sign(
+    const accessToken = await this.jwtService.signAsync(
       {
         uuid: userUuid,
         email: user.email,
       },
       {
-        privateKey: this.privateKey,
+        privateKey: await this.keyService.getPrivateKey(),
         algorithm: 'RS256',
       },
     );
 
-    const refreshToken = this.jwtService.sign(
+    const refreshToken = await this.jwtService.signAsync(
       {
         uuid: userUuid,
         email: user.email,
       },
       {
-        privateKey: this.privateKey,
+        privateKey: await this.keyService.getPrivateKey(),
         algorithm: 'RS256',
       },
     );

@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { KafkaModule } from '../../internal/kafka/kafka.module';
+import { KeyService } from '../../internal/key/keys.service';
 @Module({
   imports: [
     JwtModule.register({
@@ -11,6 +12,6 @@ import { KafkaModule } from '../../internal/kafka/kafka.module';
     KafkaModule.register('auth-service-group'),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, KeyService],
 })
 export class AuthModule {}

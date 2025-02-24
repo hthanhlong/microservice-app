@@ -16,7 +16,7 @@ export class KafkaModule {
             name: 'KAFKA_SERVICE',
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
-              const brokers = configService.get('KAFKA_HOSTS').split(',');
+              const brokers = configService.get('KAFKA_BROKER').split(',');
               return {
                 transport: Transport.KAFKA,
                 options: {
@@ -32,7 +32,6 @@ export class KafkaModule {
             inject: [ConfigService],
           },
         ]),
-        KafkaService,
       ],
       exports: [KafkaService, KafkaConsumer],
       providers: [KafkaService, KafkaConsumer],
