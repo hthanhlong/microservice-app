@@ -3,6 +3,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import { TOPICS } from './topic';
 import chalk from 'chalk';
 import { Logger } from '@nestjs/common';
+import { VerifyCodeEvent } from './events';
 const logger = new Logger('KafkaService');
 @Injectable()
 export class KafkaService implements OnModuleInit {
@@ -15,10 +16,7 @@ export class KafkaService implements OnModuleInit {
     logger.log(chalk.green('Kafka connected ✅'));
   }
 
-  sendVerifyCode(email: string, verifyCode: string) {
-    this.kafkaClient.emit(TOPICS.VERIFY_CODE, {
-      email,
-      verifyCode,
-    });
+  sendVerifyCode(verifyCode: VerifyCodeEvent) {
+    this.kafkaClient.emit(TOPICS.VERIFY_CODE, verifyCode);
   }
 }

@@ -6,10 +6,10 @@ import { KafkaModule } from '../../internal/kafka/kafka.module';
 import { KeyService } from '../../internal/key/keys.service';
 @Module({
   imports: [
+    KafkaModule,
     JwtModule.register({
       secret: 'refresh_secret',
     }),
-    KafkaModule.register('auth-service-group'),
   ],
   controllers: [AuthController],
   providers: [AuthService, KeyService],

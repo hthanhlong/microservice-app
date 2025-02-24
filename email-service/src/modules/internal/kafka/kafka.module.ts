@@ -2,7 +2,6 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
 import { ClientsModule } from '@nestjs/microservices';
 import { KafkaService } from './kafka.service';
-import { KafkaConsumer } from './kafka.consumer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 @Module({})
 export class KafkaModule {
@@ -16,7 +15,7 @@ export class KafkaModule {
             name: 'KAFKA_SERVICE',
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
-              const brokers = configService.get('KAFKA_HOSTS').split(',');
+              const brokers = configService.get('KAFKA_BROKER').split(',');
               return {
                 transport: Transport.KAFKA,
                 options: {
@@ -32,10 +31,9 @@ export class KafkaModule {
             inject: [ConfigService],
           },
         ]),
-        KafkaService,
       ],
-      exports: [KafkaService, KafkaConsumer],
-      providers: [KafkaService, KafkaConsumer],
+      exports: [KafkaService],
+      providers: [KafkaService],
     };
   }
 }

@@ -1,6 +1,9 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-
+import { TOPICS } from './topic';
+import chalk from 'chalk';
+import { Logger } from '@nestjs/common';
+const logger = new Logger('KafkaService');
 @Injectable()
 export class KafkaService implements OnModuleInit {
   constructor(
@@ -9,9 +12,13 @@ export class KafkaService implements OnModuleInit {
 
   async onModuleInit() {
     await this.kafkaClient.connect();
+    logger.log(chalk.green('Kafka connected ✅'));
   }
 
-  sendMessage(topic: string, message: any) {
-    this.kafkaClient.emit(topic, message);
+  sendVerifyCode(email: string, verifyCode: string) {
+    this.kafkaClient.emit(TOPICS.VERIFY_CODE, {
+      email,
+      verifyCode,
+    });
   }
 }

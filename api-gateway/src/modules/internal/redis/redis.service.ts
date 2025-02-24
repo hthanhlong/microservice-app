@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 
 const logger = new Logger('RedisService');
 @Injectable()
-export class RedisService implements OnModuleInit, OnModuleDestroy {
+export class RedisService implements OnModuleDestroy {
   private client: Redis;
 
   constructor(private readonly configService: ConfigService) {
@@ -26,10 +26,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client.on('error', (err) => {
       logger.error(chalk.red('Redis error ❌', err));
     });
-  }
-
-  onModuleInit() {
-    logger.log(chalk.green('RedisService initialized ✅'));
   }
 
   // set public key
