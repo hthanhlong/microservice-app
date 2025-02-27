@@ -53,24 +53,20 @@ export class AuthController {
   @Post(AUTH_ROUTES.signIn)
   async signIn(
     @Body() signInDto: SignInDto,
-    @Res({ passthrough: true }) res: Response,
   ): Promise<IRes<SignInResponseDto | null>> {
     const result = await this.authService.signIn(signInDto);
     if (result.hasError || !result.data)
       throw new BadRequestException(result.message);
-    this.authService.setCookies(res, result.data);
     return result;
   }
 
   @Post(AUTH_ROUTES.googleSignIn)
   async googleSignIn(
     @Body() signInWithGoogleDto: SignInWithGoogleDto,
-    @Res() res: Response,
   ): Promise<IRes<SignInResponseDto | null>> {
     const result = await this.authService.googleSignIn(signInWithGoogleDto);
     if (result.hasError || !result.data)
       throw new BadRequestException(result.message);
-    this.authService.setCookies(res, result.data);
     return result;
   }
 
@@ -85,7 +81,6 @@ export class AuthController {
     const result = await this.authService.refreshTokens(refreshToken);
     if (result.hasError || !result.data)
       throw new BadRequestException(result.message);
-    this.authService.setCookies(res, result.data);
     return result;
   }
 

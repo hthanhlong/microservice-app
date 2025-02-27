@@ -160,6 +160,7 @@ export class AuthService {
       {
         uuid: userUuid,
         email: user.email,
+        role: user.role,
       },
       {
         privateKey: await this.keyService.getPrivateKey(),
