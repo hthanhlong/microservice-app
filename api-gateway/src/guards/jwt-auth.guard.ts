@@ -10,6 +10,7 @@ import { RedisService } from '../modules/internal/redis/redis.service';
 interface JwtPayload {
   uuid: string;
   email: string;
+  role: string;
 }
 
 @Injectable()
