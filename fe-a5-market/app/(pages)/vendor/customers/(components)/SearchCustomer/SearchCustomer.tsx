@@ -2,7 +2,7 @@
 import { TextInput, Dropdown, Button } from "flowbite-react";
 import { SearchIcon, FilterIcon, TickIcon } from "@/components/ui/icons";
 
-export default function Search() {
+export default function SearchCustomer() {
   return (
     <div className="flex justify-between items-center py-4">
       <div>
@@ -45,23 +45,23 @@ export default function Search() {
       >
         <Dropdown.Item className="hover:!bg-slate-700 hover:text-white">
           {true ? <TickIcon /> : <div className="w-4 h-4" />}
-          <span className="text-textPrimary text-sm ml-2">Default</span>
+          <span className="text-textPrimary text-sm ml-2">All</span>
         </Dropdown.Item>
         <Dropdown.Item className="hover:!bg-slate-700 hover:text-white">
           {false ? <TickIcon /> : <div className="w-4 h-4" />}
-          <span className="text-textPrimary text-sm ml-2">Highest Price</span>
+          <span className="text-textPrimary text-sm ml-2">Active</span>
         </Dropdown.Item>
         <Dropdown.Item className="hover:!bg-slate-700 hover:text-white">
           {false ? <TickIcon /> : <div className="w-4 h-4" />}
-          <span className="text-textPrimary text-sm ml-2">Lowest Price</span>
+          <span className="text-textPrimary text-sm ml-2">Inactive</span>
         </Dropdown.Item>
         <Dropdown.Item className="hover:!bg-slate-700 hover:text-white">
           {false ? <TickIcon /> : <div className="w-4 h-4" />}
-          <span className="text-textPrimary text-sm ml-2">Newest</span>
+          <span className="text-textPrimary text-sm ml-2">Blocked</span>
         </Dropdown.Item>
         <Dropdown.Item className="hover:!bg-slate-700 hover:text-white">
           {false ? <TickIcon /> : <div className="w-4 h-4" />}
-          <span className="text-textPrimary text-sm ml-2">Oldest</span>
+          <span className="text-textPrimary text-sm ml-2">New</span>
         </Dropdown.Item>
       </Dropdown>
     </div>

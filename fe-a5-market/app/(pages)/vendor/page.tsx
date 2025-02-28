@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function VendorDashboard() {
-  return <div>VendorDashboard</div>;
+  redirect("/vendor/dashboard");
 }
