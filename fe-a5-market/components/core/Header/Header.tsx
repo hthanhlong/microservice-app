@@ -1,12 +1,18 @@
 "use client";
 import { Wrapper } from "@/components/ui";
 import { Avatar, Dropdown, Navbar } from "flowbite-react";
+import Link from "next/link";
 export default function Header() {
   return (
     <Wrapper>
       <Navbar fluid rounded className="bg-primary shadow-xl">
         <Navbar.Brand>
-          <div className="text-2xl font-bold text-textPrimary">A5 Market</div>
+          <Link
+            href="/"
+            className="text-2xl font-bold text-textPrimary hover:text-textSecondary"
+          >
+            A5 Market
+          </Link>
         </Navbar.Brand>
         <div className="flex md:order-2">
           <Dropdown
