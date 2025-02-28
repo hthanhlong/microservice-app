@@ -1,10 +1,10 @@
 import Image from "next/image";
 
-export default function SearchIcon() {
+export default function TickIcon() {
   return (
     <Image
-      src="/search.svg"
-      alt="search"
+      src="/tick.svg"
+      alt="tick"
       width={16}
       height={16}
       className="invert"

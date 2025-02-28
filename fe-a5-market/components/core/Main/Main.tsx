@@ -1,6 +1,6 @@
 import { Wrapper } from "@/components/ui";
 import Cards from "../Cards/Cards";
-import Pagination from "../Pagination/Pagination";
+import PaginationComponent from "../Pagination/Pagination";
 import Search from "../Search/Search";
 
 export default function Main() {
@@ -9,7 +9,7 @@ export default function Main() {
       <Wrapper>
         <Search />
         <Cards />
-        <Pagination />
+        <PaginationComponent />
       </Wrapper>
     </main>
   );

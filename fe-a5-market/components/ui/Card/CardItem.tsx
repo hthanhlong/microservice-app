@@ -4,8 +4,8 @@ import { FastCart } from "@/components/ui/icons";
 export default function CardItem() {
   return (
     <Card
-      className="max-w-lg bg-primary border-none"
-      imgAlt="Meaningful alt text for an image that is not purely decorative"
+      className="max-w-lg bg-primary border-none shadow-2xl"
+      imgAlt="Meaningful alt text for an image that is not purely decorative "
       imgSrc="/140.webp"
     >
       <h2 className="text-sm text-textSecondary">
@@ -24,7 +24,7 @@ export default function CardItem() {
           <RatingStar filled={false} />
         </Rating>
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <div className="text-textPrimary text-2xl font-bold flex items-center gap-2">
           $100{" "}
           <span className="text-textSecondary text-sm">
@@ -33,7 +33,14 @@ export default function CardItem() {
           <FastCart />
         </div>
         <div>
-          <Button>View Details</Button>
+          <Button
+            size="xs"
+            color="dark"
+            as="span"
+            className="cursor-pointer hover:bg-slate-700"
+          >
+            View Details
+          </Button>
         </div>
       </div>
     </Card>

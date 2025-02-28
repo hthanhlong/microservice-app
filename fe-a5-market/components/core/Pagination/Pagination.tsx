@@ -1,67 +1,36 @@
-export default function Pagination() {
+"use client";
+
+import { Pagination } from "flowbite-react";
+import { useState } from "react";
+
+export default function PaginationComponent() {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const onPageChange = (page: number) => setCurrentPage(page);
+
   return (
-    <div className="flex justify-center items-center py-2">
-      <nav aria-label="Page navigation example">
-        <ul className="inline-flex -space-x-px text-sm">
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              Previous
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              1
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              2
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              aria-current="page"
-              className="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-            >
-              3
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              4
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              5
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              Next
-            </a>
-          </li>
-        </ul>
-      </nav>
+    <div className="flex overflow-x-auto sm:justify-center py-6">
+      <Pagination
+        currentPage={currentPage}
+        totalPages={100}
+        onPageChange={onPageChange}
+        theme={{
+          pages: {
+            previous: {
+              base: "ml-0 rounded-l-lg border border-black bg-primary px-3 py-2 leading-tight text-gray-500 enabled:hover:bg-stale-700 enabled:hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 enabled:dark:hover:bg-gray-700 enabled:dark:hover:text-white",
+            },
+            next: {
+              base: "rounded-r-lg border border-black bg-primary px-3 py-2 leading-tight text-gray-500 enabled:hover:bg-stale-700 enabled:hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 enabled:dark:hover:bg-gray-700 enabled:dark:hover:text-white",
+            },
+            selector: {
+              base: "w-12 border border-black bg-primary py-2 leading-tight text-gray-500 enabled:hover:bg-stale-700 enabled:hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 enabled:dark:hover:bg-slate-700 enabled:dark:hover:text-white",
+              active:
+                "bg-primary text-cyan-600 hover:bg-stale-700 hover:text-cyan-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white",
+              disabled: "cursor-not-allowed opacity-50",
+            },
+          },
+        }}
+      />
     </div>
   );
 }
