@@ -15,7 +15,7 @@ export default function SignUp() {
           <Label htmlFor="name" value="Your name" className="text-white" />
         </div>
         <TextInput
-          id="name"
+          id="name1"
           type="text"
           placeholder="name"
           required
@@ -27,7 +27,7 @@ export default function SignUp() {
           <Label htmlFor="email" value="Your email" className="text-white" />
         </div>
         <TextInput
-          id="email"
+          id="email1"
           type="email"
           placeholder="email"
           required
@@ -43,7 +43,7 @@ export default function SignUp() {
           />
         </div>
         <TextInput
-          id="password"
+          id="password1"
           type="password"
           placeholder="password"
           required

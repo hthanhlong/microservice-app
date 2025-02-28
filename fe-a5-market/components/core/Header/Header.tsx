@@ -6,14 +6,12 @@ export default function Header() {
   return (
     <Wrapper>
       <Navbar fluid rounded className="bg-primary shadow-xl">
-        <Navbar.Brand>
-          <Link
-            href="/"
-            className="text-2xl font-bold text-textPrimary hover:text-textSecondary"
-          >
-            A5 Market
-          </Link>
-        </Navbar.Brand>
+        <Link
+          href="/"
+          className="text-2xl font-bold text-textPrimary hover:text-textSecondary"
+        >
+          A5 Market
+        </Link>
         <div className="flex md:order-2">
           <Dropdown
             arrowIcon={false}
