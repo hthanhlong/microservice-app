@@ -2,13 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: #1F222A;
+  --text-primary: #A6ACBB;
+  --text-secondary: #696F7D;
+}
+
 body {
-  background-color: #333;
+  background-color: var(--background);
 }
 
 main {
   margin: 0 auto;
   max-width: 1280px;
-  background-color: #fff;
   /* min-height: 100vh; */
 }

@@ -1,14 +1,35 @@
-import Wrapper from "@/components/ui/Wrapper/Wrapper";
-import Link from "next/link";
+"use client";
+import { DropDown, Wrapper } from "@/components/ui";
+import { Avatar, Dropdown, Navbar } from "flowbite-react";
 export default function Header() {
   return (
     <Wrapper>
-      <header className="flex items-center justify-between bg-red-300">
-        <div className="flex items-center gap-4 justify-between w-full p-2">
-          <Link href="/">A5 Market</Link>
-          <Link href="/">carts</Link>
+      <Navbar fluid rounded className="bg-primary shadow-xl">
+        <Navbar.Brand>
+          <DropDown />
+        </Navbar.Brand>
+        <div className="text-2xl font-bold text-textPrimary">A5 Market</div>
+        <div className="flex md:order-2">
+          <Dropdown
+            arrowIcon={false}
+            inline
+            label={<Avatar alt="User settings" img="/140.webp" rounded />}
+          >
+            <Dropdown.Header>
+              <span className="block text-sm">Bonnie Green</span>
+              <span className="block truncate text-sm font-medium">
+                name@flowbite.com
+              </span>
+            </Dropdown.Header>
+            <Dropdown.Item>Dashboard</Dropdown.Item>
+            <Dropdown.Item>Settings</Dropdown.Item>
+            <Dropdown.Item>Earnings</Dropdown.Item>
+            <Dropdown.Divider />
+            <Dropdown.Item>Sign out</Dropdown.Item>
+          </Dropdown>
+          <Navbar.Toggle />
         </div>
-      </header>
+      </Navbar>
     </Wrapper>
   );
 }

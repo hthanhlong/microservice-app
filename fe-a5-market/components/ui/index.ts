@@ -1,4 +1,5 @@
-import CardMain from "./Card/CardMain/CardMain";
 import Wrapper from "./Wrapper/Wrapper";
+import CardItem from "./Card/CardItem";
+import DropDown from "./DropDown/DropDown";
 
-export { CardMain, Wrapper };
+export { Wrapper, CardItem, DropDown };

@@ -1,3 +1,12 @@
-export default function Wrapper({ children }: { children: React.ReactNode }) {
-  return <div className="w-full max-w-7xl mx-auto">{children}</div>;
+export default function Wrapper({
+  children,
+  ...props
+}: {
+  children: React.ReactNode;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className="w-full max-w-7xl mx-auto" {...props}>
+      {children}
+    </div>
+  );
 }
