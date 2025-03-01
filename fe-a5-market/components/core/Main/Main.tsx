@@ -5,12 +5,10 @@ import SearchBar from "../SearchBar/SearchBar";
 
 export default function Main() {
   return (
-    <main className="mt-4">
-      <Wrapper>
-        <SearchBar />
-        <Cards />
-        <PaginationComponent />
-      </Wrapper>
-    </main>
+    <Wrapper>
+      <SearchBar />
+      <Cards />
+      <PaginationComponent />
+    </Wrapper>
   );
 }
